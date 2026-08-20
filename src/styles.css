@@ -1,3 +1,38 @@
-/* You can add global styles to this file, and also import other style files */
-
 @import 'tailwindcss';
+@plugin 'tailwindcss-primeui';
+@import 'primeicons/primeicons.css';
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  /* Lavanda — primario, introspección/calma */
+  --color-blue: #8b7ec8;
+  --color-blue-dark: #b3a4e8;
+  --color-blue-soft: #f1eefb;
+  --color-blue-soft-dark: #2b2340;
+
+  /* Coral/durazno — acento cálido, energía positiva */
+  --color-green: #ec8f6e;
+  --color-green-dark: #f4a988;
+  --color-green-soft: #fdf0e9;
+  --color-green-soft-dark: #3a2a22;
+
+  /* Superficies crema — nada de blanco clínico */
+  --color-surface-white: #fbf3e8;
+  --color-surface-alt: #f2e6d4;
+  --color-surface-white-dark: #221d2c;
+  --color-surface-alt-dark: #2e2738;
+
+  --color-border: #e3d3ba;
+  --color-border-dark: #453a58;
+
+  --color-muted: #94816c;
+  --color-muted-dark: #a89bb8;
+
+  --color-main: #3a2f24;
+  --color-main-dark: #f2ece2;
+
+  /* Terracota — alerta suave, no "error crítico" */
+  --color-danger: #c96450;
+  --color-danger-dark: #e88f7c;
+}
