@@ -37,7 +37,7 @@ const MyPreset = definePreset(Aura, {
           300: '#d1bd9e',
           400: '#ac9678',
           500: '#94816c',
-          600: '#78665296',
+          600: '#786652',
           700: '#5c4d3d',
           800: '#3a2f24',
           900: '#291f17',
@@ -71,9 +71,27 @@ const MyPreset = definePreset(Aura, {
     },
   },
 });
+
+// Direcciones posibles del slide, elegidas al azar en cada navegación
+const SLIDE_DIRECTIONS = ['slide-left', 'slide-right', 'slide-up', 'slide-down'] as const;
+
 export const appConfig: ApplicationConfig = {
   providers: [
-    provideRouter(routes, withViewTransitions()),
+    provideRouter(
+      routes,
+      withViewTransitions({
+        onViewTransitionCreated: ({ transition }) => {
+          const direction =
+            SLIDE_DIRECTIONS[Math.floor(Math.random() * SLIDE_DIRECTIONS.length)];
+
+          document.documentElement.setAttribute('data-transition', direction);
+
+          transition.finished.finally(() => {
+            document.documentElement.removeAttribute('data-transition');
+          });
+        },
+      })
+    ),
     provideAnimationsAsync(),
     { provide: LOCALE_ID, useValue: 'es-MX' },
     providePrimeNG({

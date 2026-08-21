@@ -36,3 +36,107 @@
   --color-danger: #c96450;
   --color-danger-dark: #e88f7c;
 }
+
+/* ============================================
+   Transiciones de navegación — slide aleatorio
+   (solo afecta .page-content, footer estático)
+   ============================================ */
+
+/* La raíz (footer, layout general) no anima nada */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+::view-transition-group(page-content) {
+  overflow: hidden;
+}
+
+::view-transition-old(page-content),
+::view-transition-new(page-content) {
+  animation-duration: 380ms;
+  animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  animation-fill-mode: both;
+  mix-blend-mode: normal;
+}
+
+html[data-transition='slide-left']::view-transition-old(page-content) {
+  animation-name: slide-out-left;
+}
+
+html[data-transition='slide-left']::view-transition-new(page-content) {
+  animation-name: slide-in-right;
+}
+
+html[data-transition='slide-right']::view-transition-old(page-content) {
+  animation-name: slide-out-right;
+}
+
+html[data-transition='slide-right']::view-transition-new(page-content) {
+  animation-name: slide-in-left;
+}
+
+html[data-transition='slide-up']::view-transition-old(page-content) {
+  animation-name: slide-out-up;
+}
+
+html[data-transition='slide-up']::view-transition-new(page-content) {
+  animation-name: slide-in-down;
+}
+
+html[data-transition='slide-down']::view-transition-old(page-content) {
+  animation-name: slide-out-down;
+}
+
+html[data-transition='slide-down']::view-transition-new(page-content) {
+  animation-name: slide-in-up;
+}
+
+@keyframes slide-out-left {
+  to {
+    transform: translateX(-100%);
+  }
+}
+
+@keyframes slide-in-right {
+  from {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes slide-out-right {
+  to {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes slide-in-left {
+  from {
+    transform: translateX(-100%);
+  }
+}
+
+@keyframes slide-out-up {
+  to {
+    transform: translateY(-100%);
+  }
+}
+
+@keyframes slide-in-down {
+  from {
+    transform: translateY(100%);
+  }
+}
+
+@keyframes slide-out-down {
+  to {
+    transform: translateY(100%);
+  }
+}
+
+@keyframes slide-in-up {
+  from {
+    transform: translateY(-100%);
+  }
+}
