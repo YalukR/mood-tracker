@@ -1,6 +1,7 @@
 import { Component, inject, signal, computed, output, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { SqliteService } from '../../../core/services/sqlite.service';
 import {
   EmotionRepository,
   CombinationRepository,
@@ -24,6 +25,7 @@ interface EmotionChip {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class MoodForm implements OnInit {
+  private sqlite = inject(SqliteService);
   private emotionRepo = inject(EmotionRepository);
   private combinationRepo = inject(CombinationRepository);
   private colorRepo = inject(UserEmotionColorRepository);
@@ -36,6 +38,7 @@ export class MoodForm implements OnInit {
   // --- Estado del catálogo ---
   chips = signal<EmotionChip[]>([]);
   loading = signal(true);
+  loadError = signal<string | null>(null);
 
   // --- Estado de la selección del usuario ---
   selectedIds = signal<Set<number>>(new Set());
@@ -63,25 +66,46 @@ export class MoodForm implements OnInit {
   private static readonly FALLBACK_COLOR = '#c5b8a8';
 
   async ngOnInit(): Promise<void> {
+    await this.waitForDatabase();
     await this.loadCatalog();
   }
 
-  private async loadCatalog(): Promise<void> {
+  /** Espera activamente a que SqliteService termine su inicialización */
+  private async waitForDatabase(): Promise<void> {
+    if (this.sqlite.ready()) return;
+
+    return new Promise((resolve) => {
+      const check = setInterval(() => {
+        if (this.sqlite.ready()) {
+          clearInterval(check);
+          resolve();
+        }
+      }, 50);
+    });
+  }
+
+  async loadCatalog(): Promise<void> {
     this.loading.set(true);
+    this.loadError.set(null);
 
-    const [emotions, colorMap] = await Promise.all([
-      this.emotionRepo.getAll(),
-      this.colorRepo.getAllColorsMap(),
-    ]);
+    try {
+      const [emotions, colorMap] = await Promise.all([
+        this.emotionRepo.getAll(),
+        this.colorRepo.getAllColorsMap(),
+      ]);
 
-    this.chips.set(
-      emotions.map(emotion => ({
-        emotion,
-        color: colorMap.get(emotion.id) ?? MoodForm.FALLBACK_COLOR,
-      }))
-    );
-
-    this.loading.set(false);
+      this.chips.set(
+        emotions.map(emotion => ({
+          emotion,
+          color: colorMap.get(emotion.id) ?? MoodForm.FALLBACK_COLOR,
+        }))
+      );
+    } catch (err) {
+      console.error('[MoodForm] Error cargando catálogo:', err);
+      this.loadError.set(err instanceof Error ? err.message : 'No se pudo cargar el catálogo de emociones.');
+    } finally {
+      this.loading.set(false);
+    }
   }
 
   async toggleEmotion(id: number): Promise<void> {

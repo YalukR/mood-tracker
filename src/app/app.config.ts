@@ -1,4 +1,4 @@
-import { ApplicationConfig, LOCALE_ID } from '@angular/core';
+import { ApplicationConfig, LOCALE_ID, APP_INITIALIZER } from '@angular/core';
 import { provideRouter, withViewTransitions } from '@angular/router';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { registerLocaleData } from '@angular/common';
@@ -8,6 +8,7 @@ import { providePrimeNG } from 'primeng/config';
 import { definePreset } from '@primeng/themes';
 import Aura from '@primeng/themes/aura';
 import { MessageService } from 'primeng/api';
+import { SqliteService } from './core/services/sqlite.service';
 
 registerLocaleData(localeEs);
 
@@ -75,6 +76,10 @@ const MyPreset = definePreset(Aura, {
 // Direcciones posibles del slide, elegidas al azar en cada navegación
 const SLIDE_DIRECTIONS = ['slide-left', 'slide-right', 'slide-up', 'slide-down'] as const;
 
+function initSqlite(sqlite: SqliteService) {
+  return () => sqlite.init();
+}
+
 export const appConfig: ApplicationConfig = {
   providers: [
     provideRouter(
@@ -104,5 +109,12 @@ export const appConfig: ApplicationConfig = {
     }),
 
     MessageService,
+
+    {
+      provide: APP_INITIALIZER,
+      useFactory: initSqlite,
+      deps: [SqliteService],
+      multi: true,
+    },
   ],
 };

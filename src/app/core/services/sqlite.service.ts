@@ -20,12 +20,7 @@ export class SqliteService {
 
   async init(): Promise<void> {
     if (this.platform === 'web') {
-      await jeepSqlite(window);
-      await customElements.whenDefined('jeep-sqlite');
-      const el = document.createElement('jeep-sqlite');
-      document.body.appendChild(el);
-      await customElements.whenDefined('jeep-sqlite');
-      await this.sqlite.initWebStore();
+      await this.setupWebStore();
     }
 
     const isConn = (await this.sqlite.isConnection(DB_NAME, false)).result;
@@ -39,6 +34,31 @@ export class SqliteService {
     await this.runMigrations();
 
     this.ready.set(true);
+  }
+
+  /** Prepara jeep-sqlite en web, evitando duplicados y esperando su hidratación completa */
+  private async setupWebStore(): Promise<void> {
+    await jeepSqlite(window);
+    await customElements.whenDefined('jeep-sqlite');
+
+    // Evita crear un segundo <jeep-sqlite> si init() se llamara más de una vez
+    // (por ejemplo, durante hot-reload en ng serve)
+    let el = document.querySelector('jeep-sqlite') as (HTMLElement & { componentOnReady?: () => Promise<unknown> }) | null;
+
+    if (!el) {
+      el = document.createElement('jeep-sqlite');
+      document.body.appendChild(el);
+      await customElements.whenDefined('jeep-sqlite');
+    }
+
+    // jeep-sqlite es un componente Stencil: whenDefined solo confirma que la
+    // clase está registrada, no que el elemento terminó de hidratarse.
+    // componentOnReady() sí espera a que esté realmente listo para usarse.
+    if (typeof el.componentOnReady === 'function') {
+      await el.componentOnReady();
+    }
+
+    await this.sqlite.initWebStore();
   }
 
   private async runMigrations(): Promise<void> {
@@ -60,9 +80,7 @@ export class SqliteService {
       await this.db.execute(`PRAGMA user_version = ${migration.version};`);
     }
 
-    if (this.platform === 'web') {
-      await this.sqlite.saveToStore(DB_NAME);
-    }
+    await this.persistWeb();
   }
 
   getDb(): SQLiteDBConnection {
@@ -70,9 +88,14 @@ export class SqliteService {
     return this.db;
   }
 
+  /** Persiste a IndexedDB en web. No debe tumbar la app si falla — solo se registra el aviso. */
   async persistWeb(): Promise<void> {
-    if (this.platform === 'web') {
+    if (this.platform !== 'web') return;
+
+    try {
       await this.sqlite.saveToStore(DB_NAME);
+    } catch (err) {
+      console.warn('[SQLite] No se pudo persistir a IndexedDB todavía:', err);
     }
   }
 }
