@@ -13,6 +13,11 @@ export const routes: Routes = [
         data: { icon: 'pi-home', label: 'Home' },
     },
     {
+        path: 'calendar',
+        loadComponent: () => import('./pages/calendar/calendar').then(m => m.Calendar),
+        data: { icon: 'pi-calendar', label: 'Calendario' },
+    },
+    {
         path: 'settings',
         loadComponent: () => import('./pages/settings/settings').then(m => m.Settings),
         data: { icon: 'pi-cog', label: 'Configuraciones' },
