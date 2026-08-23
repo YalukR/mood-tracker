@@ -20,6 +20,6 @@ export const routes: Routes = [
     {
         path: 'settings',
         loadComponent: () => import('./pages/settings/settings').then(m => m.Settings),
-        data: { icon: 'pi-cog', label: 'Configuraciones' },
+        // data: { icon: 'pi-cog', label: 'Configuraciones' },
     },
 ];

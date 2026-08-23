@@ -1,1 +1,181 @@
-<p>mood-form works!</p>
+<div class="flex flex-col gap-6 pb-4">
+
+  <!-- Encabezado -->
+  <div>
+    <p class="mb-1 text-xs font-semibold uppercase tracking-wide text-blue dark:text-blue-dark">
+      Nuevo registro
+    </p>
+    <h1 class="text-2xl font-bold text-main dark:text-main-dark">¿Qué sientes ahora?</h1>
+    <p class="mt-1.5 text-sm leading-relaxed text-muted dark:text-muted-dark">
+      Puedes elegir más de una. No hay una respuesta correcta.
+    </p>
+  </div>
+
+  @if (loading()) {
+    <div class="flex justify-center py-10">
+      <i class="pi pi-spin pi-spinner text-2xl text-blue dark:text-blue-dark"></i>
+    </div>
+  } @else {
+
+    <!-- Chips de emociones -->
+    <div class="flex flex-wrap gap-2">
+      @for (chip of chips(); track chip.emotion.id) {
+        <button
+          type="button"
+          class="flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-medium
+                 transition-all duration-200 ease-out border"
+          [style.background-color]="selectedIds().has(chip.emotion.id) ? chip.color : 'transparent'"
+          [style.border-color]="chip.color"
+          [style.color]="selectedIds().has(chip.emotion.id) ? '#fffdf9' : chip.color"
+          (click)="toggleEmotion(chip.emotion.id)">
+          {{ chip.emotion.name }}
+          @if (chip.emotion.isCustom) {
+            <i class="pi pi-user text-[10px] opacity-70"></i>
+          }
+        </button>
+      }
+
+      <!-- Botón para crear emoción custom -->
+      <button
+        type="button"
+        class="flex items-center gap-1.5 rounded-full border border-dashed border-blue px-4 py-2
+               text-sm font-medium text-blue transition-colors dark:border-blue-dark dark:text-blue-dark
+               hover:bg-blue-soft dark:hover:bg-blue-soft-dark"
+        (click)="creatingCustom.set(true)">
+        <i class="pi pi-plus text-xs"></i>
+        Nueva
+      </button>
+    </div>
+
+    <!-- Form inline de emoción custom -->
+    @if (creatingCustom()) {
+      <div class="rounded-2xl border border-border bg-surface-alt p-4 dark:border-border-dark dark:bg-surface-alt-dark">
+        <label class="mb-1.5 block text-xs font-semibold text-muted dark:text-muted-dark">
+          ¿Cómo la llamarías?
+        </label>
+        <div class="flex gap-2">
+          <input
+            type="text"
+            class="flex-1 rounded-xl border border-border bg-surface-white px-3 py-2 text-sm text-main
+                   outline-none focus:border-blue dark:border-border-dark dark:bg-surface-white-dark
+                   dark:text-main-dark dark:focus:border-blue-dark"
+            placeholder="Ej. Desconexión"
+            [ngModel]="customName()"
+            (ngModelChange)="customName.set($event)"
+            (keyup.enter)="createCustomEmotion()" />
+          <button
+            type="button"
+            class="rounded-xl bg-blue px-4 py-2 text-sm font-semibold text-white dark:bg-blue-dark dark:text-surface-white-dark"
+            (click)="createCustomEmotion()">
+            Agregar
+          </button>
+        </div>
+        @if (customError()) {
+          <p class="mt-1.5 text-xs text-danger dark:text-danger-dark">{{ customError() }}</p>
+        }
+      </div>
+    }
+
+    <!-- Sugerencia de combinación -->
+    @if (checkingSuggestion()) {
+      <div class="flex items-center gap-2 text-xs text-muted dark:text-muted-dark">
+        <i class="pi pi-spin pi-spinner"></i>
+        Buscando si esto tiene un nombre...
+      </div>
+    }
+
+    @if (suggestion(); as match) {
+      <div class="rounded-2xl border border-blue bg-blue-soft p-4 dark:border-blue-dark dark:bg-blue-soft-dark">
+        <p class="mb-1 text-[10px] font-bold uppercase tracking-wide text-blue-dark dark:text-blue-dark">
+          Sugerencia
+        </p>
+        <p class="text-sm font-semibold text-main dark:text-main-dark">
+          ¿Tal vez lo que sientes es <span class="text-blue-dark dark:text-blue-dark">{{ match.resultEmotion.name }}</span>?
+        </p>
+        @if (match.resultEmotion.description) {
+          <p class="mt-1 text-sm leading-relaxed text-muted dark:text-muted-dark">
+            {{ match.resultEmotion.description }}
+          </p>
+        }
+        <div class="mt-3 flex gap-2">
+          <button
+            type="button"
+            class="rounded-full bg-blue px-4 py-1.5 text-xs font-semibold text-white dark:bg-blue-dark dark:text-surface-white-dark"
+            (click)="acceptSuggestion()">
+            Sí, es eso
+          </button>
+          <button
+            type="button"
+            class="rounded-full border border-border px-4 py-1.5 text-xs font-medium text-muted
+                   dark:border-border-dark dark:text-muted-dark"
+            (click)="dismissSuggestion()">
+            No, déjalas separadas
+          </button>
+        </div>
+      </div>
+    }
+
+    <!-- Intensidad -->
+    <div>
+      <div class="mb-2 flex items-center justify-between">
+        <label class="text-xs font-semibold uppercase tracking-wide text-muted dark:text-muted-dark">
+          Intensidad
+        </label>
+        <span class="text-sm font-bold text-blue dark:text-blue-dark">{{ intensity() }}</span>
+      </div>
+      <input
+        type="range"
+        min="1"
+        max="10"
+        class="w-full accent-blue dark:accent-blue-dark"
+        [ngModel]="intensity()"
+        (ngModelChange)="intensity.set($event)" />
+      <div class="mt-1 flex justify-between text-[10px] text-muted dark:text-muted-dark">
+        <span>Apenas perceptible</span>
+        <span>Muy intenso</span>
+      </div>
+    </div>
+
+    <!-- Nota libre -->
+    <div>
+      <label class="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-muted dark:text-muted-dark">
+        Nota (opcional)
+      </label>
+      <textarea
+        rows="3"
+        class="w-full resize-none rounded-xl border border-border bg-surface-white px-3 py-2 text-sm text-main
+               outline-none focus:border-blue dark:border-border-dark dark:bg-surface-white-dark
+               dark:text-main-dark dark:focus:border-blue-dark"
+        placeholder="¿Qué estaba pasando?"
+        [ngModel]="note()"
+        (ngModelChange)="note.set($event)"></textarea>
+    </div>
+
+    @if (saveError()) {
+      <p class="text-sm text-danger dark:text-danger-dark">{{ saveError() }}</p>
+    }
+
+    <!-- Acciones -->
+    <div class="flex gap-3">
+      <button
+        type="button"
+        class="flex-1 rounded-2xl border border-border py-3 text-sm font-semibold text-muted
+               dark:border-border-dark dark:text-muted-dark"
+        (click)="cancel()">
+        Cancelar
+      </button>
+      <button
+        type="button"
+        class="flex-1 rounded-2xl bg-blue py-3 text-sm font-semibold text-white transition-opacity
+               disabled:opacity-50 dark:bg-blue-dark dark:text-surface-white-dark"
+        [disabled]="!canSave()"
+        (click)="save()">
+        @if (saving()) {
+          <i class="pi pi-spin pi-spinner"></i>
+        } @else {
+          Guardar
+        }
+      </button>
+    </div>
+  }
+</div>
