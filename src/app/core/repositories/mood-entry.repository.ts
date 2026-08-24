@@ -36,10 +36,13 @@ export class MoodEntryRepository {
     await db.beginTransaction();
 
     try {
+      // 👇 tercer parámetro `false` — no dejar que run() abra su propia
+      // transacción interna, ya estamos dentro de una manejada a mano
       const entryRes = await db.run(
         `INSERT INTO mood_entries (user_id, occurred_at, local_date, intensity, note)
          VALUES (?, ?, ?, ?, ?);`,
-        [CURRENT_USER_ID, occurredAt, localDate, input.intensity, input.note]
+        [CURRENT_USER_ID, occurredAt, localDate, input.intensity, input.note],
+        false
       );
 
       const moodEntryId = entryRes.changes?.lastId;
@@ -48,7 +51,8 @@ export class MoodEntryRepository {
       for (const emotionId of input.emotionIds) {
         await db.run(
           `INSERT INTO mood_entry_emotions (mood_entry_id, emotion_id) VALUES (?, ?);`,
-          [moodEntryId, emotionId]
+          [moodEntryId, emotionId],
+          false
         );
       }
 
