@@ -6,25 +6,25 @@ export const routes: Routes = [
     {
         path: 'documentation',
         loadComponent: () => import('./pages/documentation/documentation').then(m => m.Documentation),
-        data: { icon: 'pi-book', label: 'Docs' },
+        data: { headerIcon: 'pi-book', title: 'Documentación' },
     }, {
         path: 'stats',
         loadComponent: () => import('./pages/stats/stats').then(m => m.Stats),
-        data: { icon: 'pi-chart-bar', label: 'Stats' },
+        data: { icon: 'pi-chart-bar', label: 'Stats', title: 'Estadísticas' },
     },
     {
         path: 'home',
         loadComponent: () => import('./pages/home/home').then(m => m.Home),
-        data: { icon: 'pi-home', label: 'Home' },
+        data: { icon: 'pi-home', label: 'Home', title: 'Inicio' },
     },
     {
         path: 'calendar',
         loadComponent: () => import('./pages/calendar/calendar').then(m => m.Calendar),
-        data: { icon: 'pi-calendar', label: 'Calendario' },
+        data: { icon: 'pi-calendar', label: 'Calendario', title: 'Calendario' },
     },
     {
         path: 'settings',
         loadComponent: () => import('./pages/settings/settings').then(m => m.Settings),
-        data: { icon: 'pi-cog', label: 'Configuraciones' },
+        data: { headerIcon: 'pi-cog', title: 'Configuración' },
     },
 ];

@@ -1,1 +1,21 @@
-<p>page-header works!</p>
+<header
+  class="flex items-center justify-between gap-2 px-4 pt-2 pb-1
+         [padding-left:max(1rem,env(safe-area-inset-left))]
+         [padding-right:max(1rem,env(safe-area-inset-right))]">
+
+  <h1 class="truncate text-2xl font-bold text-main dark:text-main-dark">
+    {{ title() }}
+  </h1>
+
+  <div class="flex flex-shrink-0 items-center gap-1">
+    @for (item of icons; track item.path) {
+      
+        <a [routerLink]="item.path"
+        routerLinkActive="text-blue dark:text-blue-dark bg-blue-soft dark:bg-blue-soft-dark"
+        class="flex h-10 w-10 items-center justify-center rounded-full text-muted
+               transition-colors duration-200 dark:text-muted-dark">
+        <i [class]="'pi ' + item.icon + ' text-base'"></i>
+      </a>
+    }
+  </div>
+</header>
