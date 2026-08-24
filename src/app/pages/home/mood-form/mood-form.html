@@ -28,26 +28,40 @@
   } @else {
 
   <!-- Chips de emociones -->
-  <div class="flex flex-wrap gap-2">
+  <div class="grid grid-cols-3 gap-3">
     @for (chip of chips(); track chip.emotion.id) {
-    <button type="button" class="flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-medium
-                 transition-all duration-200 ease-out border"
-      [style.background-color]="selectedIds().has(chip.emotion.id) ? chip.color : 'transparent'"
-      [style.border-color]="chip.color" [style.color]="selectedIds().has(chip.emotion.id) ? '#fffdf9' : chip.color"
+    <button type="button" class="group relative flex flex-col items-center gap-2 rounded-3xl border-2 px-3 py-4
+             transition-all duration-200 ease-out active:scale-95"
+      [style.border-color]="selectedIds().has(chip.emotion.id) ? chip.color : 'var(--color-border)'"
+      [style.background-color]="selectedIds().has(chip.emotion.id) ? chip.color + '1a' : 'var(--color-surface-white)'"
       (click)="toggleEmotion(chip.emotion.id)">
-      {{ chip.emotion.name }}
+
       @if (chip.emotion.isCustom) {
-      <i class="pi pi-user text-[10px] opacity-70"></i>
+      <i class="pi pi-user absolute right-2.5 top-2.5 text-[10px] opacity-40" [style.color]="chip.color"></i>
       }
+
+      <span class="flex h-11 w-11 items-center justify-center rounded-full transition-transform duration-200"
+        [style.background-color]="chip.color" [class.scale-110]="selectedIds().has(chip.emotion.id)">
+        @if (selectedIds().has(chip.emotion.id)) {
+        <i class="pi pi-check text-sm text-white"></i>
+        }
+      </span>
+
+      <span class="text-center text-sm font-semibold leading-tight"
+        [style.color]="selectedIds().has(chip.emotion.id) ? chip.color : 'var(--color-main)'">
+        {{ chip.emotion.name }}
+      </span>
     </button>
     }
 
     <!-- Botón para crear emoción custom -->
-    <button type="button" class="flex items-center gap-1.5 rounded-full border border-dashed border-blue px-4 py-2
-               text-sm font-medium text-blue transition-colors dark:border-blue-dark dark:text-blue-dark
-               hover:bg-blue-soft dark:hover:bg-blue-soft-dark" (click)="creatingCustom.set(true)">
-      <i class="pi pi-plus text-xs"></i>
-      Nueva
+    <button type="button" class="flex flex-col items-center justify-center gap-2 rounded-3xl border-2 border-dashed
+           border-blue px-3 py-4 text-blue transition-colors dark:border-blue-dark dark:text-blue-dark
+           hover:bg-blue-soft dark:hover:bg-blue-soft-dark" (click)="creatingCustom.set(true)">
+      <span class="flex h-11 w-11 items-center justify-center rounded-full bg-blue-soft dark:bg-blue-soft-dark">
+        <i class="pi pi-plus text-sm"></i>
+      </span>
+      <span class="text-sm font-semibold">Nueva</span>
     </button>
   </div>
 
