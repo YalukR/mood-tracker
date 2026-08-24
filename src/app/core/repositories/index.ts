@@ -5,3 +5,4 @@ export * from './color-palette.repository';
 export * from './user-emotion-color.repository';
 export * from './mood-entry.repository';
 export * from './app-settings.repository';
+export * from './stats.repository';
