@@ -3,6 +3,7 @@ import { SqliteService } from '../../core/services/sqlite.service';
 import { waitForDatabase } from '../../core/utils/wait-for-database.util';
 import { getDateRangeForPeriod, StatsPeriod } from '../../core/utils/date-range.util';
 import { StatsRepository, EmotionFrequency } from '../../core/repositories';
+import { SlidingIndicator } from '../../shared/sliding-indicator'; // ajusta la ruta según tu estructura real
 
 interface PeriodOption {
   value: StatsPeriod;
@@ -12,7 +13,7 @@ interface PeriodOption {
 @Component({
   selector: 'app-stats',
   standalone: true,
-  imports: [],
+  imports: [SlidingIndicator],
   templateUrl: './stats.html',
   styleUrl: './stats.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -22,7 +23,6 @@ export class Stats implements OnInit {
   private statsRepo = inject(StatsRepository);
 
   periodOptions: PeriodOption[] = [
-    { value: 'day', label: 'Día' },
     { value: 'week', label: 'Semana' },
     { value: 'month', label: 'Mes' },
     { value: 'year', label: 'Año' },
