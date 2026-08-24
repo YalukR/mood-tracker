@@ -9,6 +9,7 @@ import { defineCustomElements as jeepSqlite } from 'jeep-sqlite/loader';
 import { MIGRATIONS } from '../migrations';
 
 const DB_NAME = 'moodtracker.db';
+const PERSIST_DEBOUNCE_MS = 800;
 
 @Injectable({ providedIn: 'root' })
 export class SqliteService {
@@ -16,9 +17,25 @@ export class SqliteService {
   private db: SQLiteDBConnection | null = null;
   private platform = Capacitor.getPlatform();
 
+  private initPromise: Promise<void> | null = null;
+  private persistTimer: ReturnType<typeof setTimeout> | null = null;
+  private persistQueue: Promise<void> = Promise.resolve();
+
   ready = signal(false);
 
   async init(): Promise<void> {
+    if (this.initPromise) return this.initPromise;
+    if (this.ready()) return;
+
+    this.initPromise = this.doInit();
+    try {
+      await this.initPromise;
+    } finally {
+      this.initPromise = null;
+    }
+  }
+
+  private async doInit(): Promise<void> {
     if (this.platform === 'web') {
       await this.setupWebStore();
     }
@@ -36,13 +53,10 @@ export class SqliteService {
     this.ready.set(true);
   }
 
-  /** Prepara jeep-sqlite en web, evitando duplicados y esperando su hidratación completa */
   private async setupWebStore(): Promise<void> {
     await jeepSqlite(window);
     await customElements.whenDefined('jeep-sqlite');
 
-    // Evita crear un segundo <jeep-sqlite> si init() se llamara más de una vez
-    // (por ejemplo, durante hot-reload en ng serve)
     let el = document.querySelector('jeep-sqlite') as (HTMLElement & { componentOnReady?: () => Promise<unknown> }) | null;
 
     if (!el) {
@@ -51,9 +65,6 @@ export class SqliteService {
       await customElements.whenDefined('jeep-sqlite');
     }
 
-    // jeep-sqlite es un componente Stencil: whenDefined solo confirma que la
-    // clase está registrada, no que el elemento terminó de hidratarse.
-    // componentOnReady() sí espera a que esté realmente listo para usarse.
     if (typeof el.componentOnReady === 'function') {
       await el.componentOnReady();
     }
@@ -79,8 +90,6 @@ export class SqliteService {
 
       await this.db.execute(`PRAGMA user_version = ${migration.version};`);
     }
-
-    await this.persistWeb();
   }
 
   getDb(): SQLiteDBConnection {
@@ -88,14 +97,54 @@ export class SqliteService {
     return this.db;
   }
 
-  /** Persiste a IndexedDB en web. No debe tumbar la app si falla — solo se registra el aviso. */
-  async persistWeb(): Promise<void> {
+  /**
+   * Persiste a IndexedDB en web, con debounce para agrupar escrituras seguidas.
+   * En lugar de saveToStore (que en esta combinación de versiones de
+   * @capacitor-community/sqlite + jeep-sqlite nunca encuentra la conexión),
+   * se fuerza un ciclo cerrar→reabrir la conexión, que según la documentación
+   * de jeep-sqlite es el mecanismo que realmente dispara el guardado a IndexedDB.
+   */
+  persistWeb(): void {
     if (this.platform !== 'web') return;
+    if (!this.ready()) return;
+
+    if (this.persistTimer) {
+      clearTimeout(this.persistTimer);
+    }
+
+    this.persistTimer = setTimeout(() => {
+      this.persistTimer = null;
+      this.persistQueue = this.persistQueue.then(() => this.doPersistWeb());
+    }, PERSIST_DEBOUNCE_MS);
+  }
+
+  /** Espera explícitamente a que la última persistencia pendiente termine */
+  async flushPersist(): Promise<void> {
+    if (this.persistTimer) {
+      clearTimeout(this.persistTimer);
+      this.persistTimer = null;
+    }
+    await this.persistQueue;
+  }
+
+  private async doPersistWeb(): Promise<void> {
+    if (!this.db) return;
 
     try {
-      await this.sqlite.saveToStore(DB_NAME);
+      // Cerrar la conexión: según jeep-sqlite, esto dispara el guardado real a IndexedDB
+      await this.db.close();
+
+      // Reabrir inmediatamente para que el resto de la app siga funcionando sin fricción
+      const isConn = (await this.sqlite.isConnection(DB_NAME, false)).result;
+      this.db = isConn
+        ? await this.sqlite.retrieveConnection(DB_NAME, false)
+        : await this.sqlite.createConnection(DB_NAME, false, 'no-encryption', 1, false);
+
+      await this.db.open();
+
+      console.log('[SQLite] Persistido a IndexedDB vía ciclo close/reopen.');
     } catch (err) {
-      console.warn('[SQLite] No se pudo persistir a IndexedDB todavía:', err);
+      console.warn('[SQLite] No se pudo persistir a IndexedDB (close/reopen falló):', err);
     }
   }
 }

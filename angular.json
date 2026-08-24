@@ -26,7 +26,8 @@
             ],
             "styles": [
               "src/styles.css"
-            ]
+            ],
+            "externalDependencies": ["crypto"]
           },
           "configurations": {
             "production": {
@@ -54,6 +55,11 @@
         },
         "serve": {
           "builder": "@angular/build:dev-server",
+          "options": {
+            "prebundle": {
+              "exclude": ["jeep-sqlite", "jeep-sqlite/loader"]
+            }
+          },
           "configurations": {
             "production": {
               "buildTarget": "mood-tracker:build:production"
