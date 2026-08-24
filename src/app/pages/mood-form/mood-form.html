@@ -157,18 +157,28 @@
   <!-- Acciones -->
   <div class="flex gap-3">
     <button type="button" class="flex-1 rounded-2xl border border-border py-3 text-sm font-semibold text-muted
-               dark:border-border-dark dark:text-muted-dark" (click)="cancel()">
+               transition-opacity disabled:opacity-40
+               dark:border-border-dark dark:text-muted-dark" [disabled]="saveState() !== 'idle'" (click)="cancel()">
       Cancelar
     </button>
-    <button type="button" class="flex-1 rounded-2xl bg-blue py-3 text-sm font-semibold text-white transition-opacity
-               disabled:opacity-50 dark:bg-blue-dark dark:text-surface-white-dark" [disabled]="!canSave()"
+
+    <button type="button" class="flex-1 rounded-2xl py-3 text-sm font-semibold text-white transition-all duration-300
+               disabled:cursor-default" [class.bg-blue]="saveState() !== 'success'"
+      [class.dark:bg-blue-dark]="saveState() !== 'success'" [class.bg-green]="saveState() === 'success'"
+      [class.dark:bg-green-dark]="saveState() === 'success'" [disabled]="!canSave() && saveState() === 'idle'"
       (click)="save()">
-      @if (saving()) {
+      @switch (saveState()) {
+      @case ('saving') {
       <i class="pi pi-spin pi-spinner"></i>
-      } @else {
+      }
+      @case ('success') {
+      <i class="pi pi-check"></i>
+      Guardado
+      }
+      @default {
       Guardar
       }
+      }
     </button>
-  </div>
-  }
+  </div>}
 </div>}

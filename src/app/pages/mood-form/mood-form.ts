@@ -1,20 +1,24 @@
-import { Component, inject, signal, computed, output, OnInit, ChangeDetectionStrategy } from '@angular/core';
+import { Component, inject, signal, computed, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { SqliteService } from '../../../core/services/sqlite.service';
+import { Router } from '@angular/router';
+import { MessageService } from 'primeng/api';
+import { SqliteService } from '../../core/services/sqlite.service';
 import {
   EmotionRepository,
   CombinationRepository,
   UserEmotionColorRepository,
   MoodEntryRepository,
   CombinationMatch,
-} from '../../../core/repositories';
-import { EmotionModel } from '../../../core/models';
+} from '../../core/repositories';
+import { EmotionModel } from '../../core/models';
 
 interface EmotionChip {
   emotion: EmotionModel;
   color: string; // hex, con fallback si el usuario no ha elegido aún
 }
+
+type SaveState = 'idle' | 'saving' | 'success';
 
 @Component({
   selector: 'app-mood-form',
@@ -25,15 +29,13 @@ interface EmotionChip {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class MoodForm implements OnInit {
+  private router = inject(Router);
+  private messageService = inject(MessageService);
   private sqlite = inject(SqliteService);
   private emotionRepo = inject(EmotionRepository);
   private combinationRepo = inject(CombinationRepository);
   private colorRepo = inject(UserEmotionColorRepository);
   private moodEntryRepo = inject(MoodEntryRepository);
-
-  /** Emitido cuando el registro se guarda con éxito, para que Home cierre el formulario */
-  saved = output<void>();
-  cancelled = output<void>();
 
   // --- Estado del catálogo ---
   chips = signal<EmotionChip[]>([]);
@@ -54,23 +56,24 @@ export class MoodForm implements OnInit {
   customName = signal('');
   customError = signal<string | null>(null);
 
-  saving = signal(false);
+  // --- Estado de guardado ---
+  saveState = signal<SaveState>('idle');
   saveError = signal<string | null>(null);
 
   selectedChips = computed(() =>
     this.chips().filter(c => this.selectedIds().has(c.emotion.id))
   );
 
-  canSave = computed(() => this.selectedIds().size > 0 && !this.saving());
+  canSave = computed(() => this.selectedIds().size > 0 && this.saveState() === 'idle');
 
   private static readonly FALLBACK_COLOR = '#c5b8a8';
+  private static readonly SUCCESS_DISPLAY_MS = 900;
 
   async ngOnInit(): Promise<void> {
     await this.waitForDatabase();
     await this.loadCatalog();
   }
 
-  /** Espera activamente a que SqliteService termine su inicialización */
   private async waitForDatabase(): Promise<void> {
     if (this.sqlite.ready()) return;
 
@@ -118,7 +121,7 @@ export class MoodForm implements OnInit {
     }
 
     this.selectedIds.set(current);
-    this.suggestion.set(null); // cualquier cambio de selección invalida la sugerencia anterior
+    this.suggestion.set(null);
     await this.checkForCombination();
   }
 
@@ -142,7 +145,6 @@ export class MoodForm implements OnInit {
     this.checkingSuggestion.set(false);
   }
 
-  /** El usuario acepta la sugerencia: reemplaza las emociones consumidas por la resultado */
   acceptSuggestion(): void {
     const match = this.suggestion();
     if (!match) return;
@@ -153,8 +155,6 @@ export class MoodForm implements OnInit {
     }
     remaining.add(match.resultEmotion.id);
 
-    // Aseguramos que la emoción resultado exista como chip visible aunque
-    // no estuviera antes en el catálogo cargado en pantalla
     if (!this.chips().some(c => c.emotion.id === match.resultEmotion.id)) {
       this.chips.update(list => [
         ...list,
@@ -166,7 +166,6 @@ export class MoodForm implements OnInit {
     this.suggestion.set(null);
   }
 
-  /** El usuario rechaza: se queda con su selección original tal cual */
   dismissSuggestion(): void {
     this.suggestion.set(null);
   }
@@ -187,7 +186,6 @@ export class MoodForm implements OnInit {
         { emotion: newEmotion, color: MoodForm.FALLBACK_COLOR },
       ]);
 
-      // La seleccionamos automáticamente, ya que el usuario la creó para usarla ahora
       const current = new Set(this.selectedIds());
       current.add(newId);
       this.selectedIds.set(current);
@@ -202,7 +200,7 @@ export class MoodForm implements OnInit {
   async save(): Promise<void> {
     if (!this.canSave()) return;
 
-    this.saving.set(true);
+    this.saveState.set('saving');
     this.saveError.set(null);
 
     try {
@@ -212,15 +210,35 @@ export class MoodForm implements OnInit {
         note: this.note().trim() || null,
       });
 
-      this.saved.emit();
+      this.saveState.set('success');
+
+      this.messageService.add({
+        severity: 'success',
+        summary: 'Registrado',
+        detail: 'Tu momento quedó guardado.',
+        life: 2500,
+      });
+
+      // Breve pausa para que el usuario vea la confirmación antes de salir
+      setTimeout(() => {
+        this.router.navigate(['/home']);
+      }, MoodForm.SUCCESS_DISPLAY_MS);
+
     } catch (err) {
-      this.saveError.set(err instanceof Error ? err.message : 'No se pudo guardar el registro.');
-    } finally {
-      this.saving.set(false);
+      this.saveState.set('idle');
+      const message = err instanceof Error ? err.message : 'No se pudo guardar el registro.';
+      this.saveError.set(message);
+
+      this.messageService.add({
+        severity: 'error',
+        summary: 'No se pudo guardar',
+        detail: message,
+        life: 4000,
+      });
     }
   }
 
   cancel(): void {
-    this.cancelled.emit();
+    this.router.navigate(['/home']);
   }
 }

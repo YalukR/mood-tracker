@@ -140,3 +140,63 @@ html[data-transition='slide-down']::view-transition-new(page-content) {
     transform: translateY(-100%);
   }
 }
+
+:root {
+  --p-toast-success-background: var(--color-green-soft) !important;
+  --p-toast-success-border-color: var(--color-green) !important;
+  --p-toast-success-color: var(--color-main) !important;
+  --p-toast-success-detail-color: var(--color-muted) !important;
+  --p-toast-success-close-button-color: var(--color-muted) !important;
+  --p-toast-success-close-button-hover-background: color-mix(in srgb, var(--color-green) 15%, transparent) !important;
+
+  --p-toast-error-background: color-mix(in srgb, var(--color-danger) 12%, var(--color-surface-white)) !important;
+  --p-toast-error-border-color: var(--color-danger) !important;
+  --p-toast-error-color: var(--color-main) !important;
+  --p-toast-error-detail-color: var(--color-muted) !important;
+  --p-toast-error-close-button-color: var(--color-muted) !important;
+  --p-toast-error-close-button-hover-background: color-mix(in srgb, var(--color-danger) 15%, transparent) !important;
+
+  --p-toast-info-background: var(--color-blue-soft) !important;
+  --p-toast-info-border-color: var(--color-blue) !important;
+  --p-toast-info-color: var(--color-main) !important;
+  --p-toast-info-detail-color: var(--color-muted) !important;
+  --p-toast-info-close-button-color: var(--color-muted) !important;
+  --p-toast-info-close-button-hover-background: color-mix(in srgb, var(--color-blue) 15%, transparent) !important;
+
+  --p-toast-warn-background: var(--color-surface-alt) !important;
+  --p-toast-warn-border-color: var(--color-border) !important;
+  --p-toast-warn-color: var(--color-main) !important;
+  --p-toast-warn-detail-color: var(--color-muted) !important;
+  --p-toast-warn-close-button-color: var(--color-muted) !important;
+  --p-toast-warn-close-button-hover-background: color-mix(in srgb, var(--color-border) 40%, transparent) !important;
+}
+
+.dark {
+  --p-toast-success-background: var(--color-green-soft-dark) !important;
+  --p-toast-success-border-color: var(--color-green-dark) !important;
+  --p-toast-success-color: var(--color-main-dark) !important;
+  --p-toast-success-detail-color: var(--color-muted-dark) !important;
+  --p-toast-success-close-button-color: var(--color-muted-dark) !important;
+  --p-toast-success-close-button-hover-background: color-mix(in srgb, var(--color-green-dark) 20%, transparent) !important;
+
+  --p-toast-error-background: color-mix(in srgb, var(--color-danger-dark) 15%, var(--color-surface-white-dark)) !important;
+  --p-toast-error-border-color: var(--color-danger-dark) !important;
+  --p-toast-error-color: var(--color-main-dark) !important;
+  --p-toast-error-detail-color: var(--color-muted-dark) !important;
+  --p-toast-error-close-button-color: var(--color-muted-dark) !important;
+  --p-toast-error-close-button-hover-background: color-mix(in srgb, var(--color-danger-dark) 20%, transparent) !important;
+
+  --p-toast-info-background: var(--color-blue-soft-dark) !important;
+  --p-toast-info-border-color: var(--color-blue-dark) !important;
+  --p-toast-info-color: var(--color-main-dark) !important;
+  --p-toast-info-detail-color: var(--color-muted-dark) !important;
+  --p-toast-info-close-button-color: var(--color-muted-dark) !important;
+  --p-toast-info-close-button-hover-background: color-mix(in srgb, var(--color-blue-dark) 20%, transparent) !important;
+
+  --p-toast-warn-background: var(--color-surface-alt-dark) !important;
+  --p-toast-warn-border-color: var(--color-border-dark) !important;
+  --p-toast-warn-color: var(--color-main-dark) !important;
+  --p-toast-warn-detail-color: var(--color-muted-dark) !important;
+  --p-toast-warn-close-button-color: var(--color-muted-dark) !important;
+  --p-toast-warn-close-button-hover-background: color-mix(in srgb, var(--color-border-dark) 40%, transparent) !important;
+}

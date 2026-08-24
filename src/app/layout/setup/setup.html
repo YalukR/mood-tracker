@@ -1,1 +1,140 @@
-<p>setup works!</p>
+@if (loading()) {
+<div class="flex justify-center py-20">
+  <i class="pi pi-spin pi-spinner text-2xl text-blue dark:text-blue-dark"></i>
+</div>
+} @else if (loadError()) {
+<div class="flex flex-col items-center gap-3 py-20 text-center">
+  <p class="text-sm text-danger dark:text-danger-dark">{{ loadError() }}</p>
+  <button type="button" class="text-xs font-semibold text-blue underline dark:text-blue-dark" (click)="loadData()">
+    Reintentar
+  </button>
+</div>
+} @else {
+
+<div class="flex min-h-[80vh] flex-col justify-between gap-8 py-6">
+
+  @if (step() === 'colors') {
+  <div class="flex flex-col gap-8">
+
+    <!-- Progreso -->
+    <div class="flex items-center justify-center gap-1.5">
+      @for (emotion of baseEmotions(); track emotion.id; let i = $index) {
+      <span
+        class="h-1.5 rounded-full transition-all duration-300"
+        [class.w-6]="i === currentEmotionIndex()"
+        [class.w-1_5]="i !== currentEmotionIndex()"
+        [style.background-color]="i <= currentEmotionIndex() ? 'var(--color-blue)' : 'var(--color-border)'"></span>
+      }
+    </div>
+
+    <div class="text-center">
+      <p class="mb-1 text-xs font-semibold uppercase tracking-wide text-blue dark:text-blue-dark">
+        Antes de empezar
+      </p>
+      <h1 class="text-2xl font-bold text-main dark:text-main-dark">
+        ¿Con qué color asocias<br>{{ currentEmotion()?.name }}?
+      </h1>
+      <p class="mt-2 text-sm leading-relaxed text-muted dark:text-muted-dark">
+        Es tu elección — no hay una respuesta correcta.
+      </p>
+    </div>
+
+    <!-- Swatches -->
+    <div class="grid grid-cols-5 gap-3 px-2">
+      @for (color of palette(); track color.id) {
+      <button
+        type="button"
+        class="flex h-12 w-12 items-center justify-center rounded-full border-2 transition-transform duration-150 active:scale-90"
+        [style.background-color]="color.hex"
+        [style.border-color]="selectedColorForCurrentEmotion() === color.id ? 'var(--color-main)' : 'transparent'"
+        (click)="selectColor(color.id)">
+        @if (selectedColorForCurrentEmotion() === color.id) {
+        <i class="pi pi-check text-sm text-white"></i>
+        }
+      </button>
+      }
+    </div>
+
+    <!-- Navegación -->
+    <div class="flex gap-3">
+      @if (currentEmotionIndex() > 0) {
+      <button type="button" class="flex-1 rounded-2xl border border-border py-3 text-sm font-semibold text-muted
+                 dark:border-border-dark dark:text-muted-dark" (click)="previousEmotion()">
+        Anterior
+      </button>
+      }
+      <button type="button" class="flex-1 rounded-2xl bg-blue py-3 text-sm font-semibold text-white transition-opacity
+                 disabled:opacity-40 dark:bg-blue-dark dark:text-surface-white-dark"
+        [disabled]="!canAdvance()"
+        (click)="nextEmotion()">
+        {{ isLastEmotion() ? 'Continuar' : 'Siguiente' }}
+      </button>
+    </div>
+  </div>
+  }
+
+  @if (step() === 'password') {
+  <div class="flex flex-col gap-6">
+
+    <div class="text-center">
+      <p class="mb-1 text-xs font-semibold uppercase tracking-wide text-blue dark:text-blue-dark">
+        Último paso
+      </p>
+      <h1 class="text-2xl font-bold text-main dark:text-main-dark">Protege tu espacio</h1>
+      <p class="mt-2 text-sm leading-relaxed text-muted dark:text-muted-dark">
+        Esta contraseña es solo tuya. Nadie más podrá verla.
+      </p>
+    </div>
+
+    <div class="flex flex-col gap-3">
+      <div>
+        <label class="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-muted dark:text-muted-dark">
+          Contraseña
+        </label>
+        <input type="password"
+          class="w-full rounded-xl border border-border bg-surface-white px-3 py-2.5 text-sm text-main
+                 outline-none focus:border-blue dark:border-border-dark dark:bg-surface-white-dark
+                 dark:text-main-dark dark:focus:border-blue-dark"
+          [ngModel]="password()"
+          (ngModelChange)="password.set($event)" />
+      </div>
+
+      <div>
+        <label class="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-muted dark:text-muted-dark">
+          Confirma tu contraseña
+        </label>
+        <input type="password"
+          class="w-full rounded-xl border border-border bg-surface-white px-3 py-2.5 text-sm text-main
+                 outline-none focus:border-blue dark:border-border-dark dark:bg-surface-white-dark
+                 dark:text-main-dark dark:focus:border-blue-dark"
+          [ngModel]="confirmPassword()"
+          (ngModelChange)="confirmPassword.set($event)"
+          (keyup.enter)="finish()" />
+      </div>
+
+      @if (passwordError()) {
+      <p class="text-xs text-danger dark:text-danger-dark">{{ passwordError() }}</p>
+      }
+    </div>
+
+    <div class="flex gap-3">
+      <button type="button" class="flex-1 rounded-2xl border border-border py-3 text-sm font-semibold text-muted
+                 dark:border-border-dark dark:text-muted-dark" (click)="backToColors()">
+        Atrás
+      </button>
+      <button type="button" class="flex-1 rounded-2xl bg-blue py-3 text-sm font-semibold text-white transition-opacity
+                 disabled:opacity-50 dark:bg-blue-dark dark:text-surface-white-dark"
+        [disabled]="saving()"
+        (click)="finish()">
+        @if (saving()) {
+        <i class="pi pi-spin pi-spinner"></i>
+        } @else {
+        Empezar
+        }
+      </button>
+    </div>
+  </div>
+  }
+
+</div>
+}

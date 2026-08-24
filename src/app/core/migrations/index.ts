@@ -9,8 +9,9 @@ import { migration007CreateMoodEntryEmotions } from './007-create-mood-entry-emo
 import { migration008CreateUserEmotionColors } from './008-create-user-emotion-colors';
 import { migration009CreateIndexes } from './009-create-indexes';
 import { migration010SeedBaseData } from './010-seed-base-data';
+import { migration011CreateAppSettings } from './011-create-app-settings';
+import { migration012SeedColorPalette } from './012-seed-color-palette';
 
-// Orden estricto — cada migración asume que las anteriores ya corrieron
 export const MIGRATIONS: Migration[] = [
   migration001CreateUsers,
   migration002CreateEmotions,
@@ -22,4 +23,6 @@ export const MIGRATIONS: Migration[] = [
   migration008CreateUserEmotionColors,
   migration009CreateIndexes,
   migration010SeedBaseData,
+  migration011CreateAppSettings,
+  migration012SeedColorPalette,
 ];
