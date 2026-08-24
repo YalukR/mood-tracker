@@ -2,7 +2,12 @@ import { Routes } from '@angular/router';
 
 export const routes: Routes = [
     { path: '', redirectTo: 'home', pathMatch: 'full' },
+
     {
+        path: 'documentation',
+        loadComponent: () => import('./pages/documentation/documentation').then(m => m.Documentation),
+        data: { icon: 'pi-book', label: 'Docs' },
+    }, {
         path: 'stats',
         loadComponent: () => import('./pages/stats/stats').then(m => m.Stats),
         data: { icon: 'pi-chart-bar', label: 'Stats' },
@@ -20,6 +25,6 @@ export const routes: Routes = [
     {
         path: 'settings',
         loadComponent: () => import('./pages/settings/settings').then(m => m.Settings),
-        // data: { icon: 'pi-cog', label: 'Configuraciones' },
+        data: { icon: 'pi-cog', label: 'Configuraciones' },
     },
 ];
