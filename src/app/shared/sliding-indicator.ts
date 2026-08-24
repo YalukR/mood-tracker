@@ -26,9 +26,13 @@ import { Component, input, computed, ChangeDetectionStrategy } from '@angular/co
       transition: transform 400ms cubic-bezier(0.34, 1.56, 0.64, 1);
       will-change: transform;
     }
-    .indicator-shape {
+    /* :where() tiene especificidad CERO — es solo un valor por defecto.
+       Cualquier clase de Tailwind pasada en shapeClass (h-7, w-7, etc.)
+       siempre gana, sin importar el orden de carga de las hojas de estilo. */
+    :where(.indicator-shape) {
       width: 100%;
       height: 100%;
+      flex-shrink: 0;
     }
   `],
   changeDetection: ChangeDetectionStrategy.OnPush,
