@@ -7,7 +7,7 @@ import { PageFooter } from './layout/page-footer/page-footer';
 import { PageHeader } from './layout/page-header/page-header';
 import { LockStateService } from './core/services/lock-state.service';
 import { AppSettingsRepository } from './core/repositories';
-import { NotificationService } from './core/services/notification.service'; // 👈 nuevo
+import { NotificationService } from './core/services/notification.service';
 
 @Component({
   selector: 'app-root',
@@ -19,7 +19,7 @@ export class App implements OnInit, OnDestroy {
   private router = inject(Router);
   private lockState = inject(LockStateService);
   private appSettingsRepo = inject(AppSettingsRepository);
-  private notificationService = inject(NotificationService); // 👈 nuevo
+  private notificationService = inject(NotificationService);
   protected readonly title = signal('mood-tracker');
 
   private currentUrl = toSignal(
