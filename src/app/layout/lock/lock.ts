@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AppSettingsRepository } from '../../core/repositories';
+import { LockStateService } from '../../core/services/lock-state.service';
 
 @Component({
   selector: 'app-lock',
@@ -15,6 +16,7 @@ import { AppSettingsRepository } from '../../core/repositories';
 export class Lock {
   private router = inject(Router);
   private appSettingsRepo = inject(AppSettingsRepository);
+  private lockState = inject(LockStateService); // 👈 nuevo, junto a los otros inject()
 
   password = signal('');
   error = signal<string | null>(null);
@@ -32,8 +34,8 @@ export class Lock {
 
     try {
       const valid = await this.appSettingsRepo.verifyPassword(pwd);
-
       if (valid) {
+        this.lockState.unlockSession();
         await this.router.navigate(['/home']);
         return;
       }
