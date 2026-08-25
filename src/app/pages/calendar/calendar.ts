@@ -13,6 +13,8 @@ interface CalendarDay {
   emotionNames: string[];
 }
 
+type SlideDirection = 'left' | 'right';
+
 const WEEKDAY_LABELS = ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
 
 function toLocalDateStr(date: Date): string {
@@ -49,11 +51,21 @@ export class Calendar implements OnInit {
   loading = signal(true);
   loadError = signal<string | null>(null);
 
+  /** Hacia dónde "entra" la cuadrícula completa al cambiar de mes (prev/next) */
+  slideDirection = signal<SlideDirection>('right');
+
+  /** Controla la entrada en cascada de las celdas SOLO la primera vez que se abre el calendario */
+  daysAnimated = signal(false);
+
   private dailyColors = signal<Map<string, DailyDominantColor[]>>(new Map());
 
   monthLabel = computed(() =>
     this.viewDate().toLocaleDateString('es-MX', { month: 'long', year: 'numeric' })
   );
+
+  /** Cambia cada vez que cambia el mes visible; se usa como key para forzar
+   *  que Angular recree el contenedor de semanas y así se repita la animación de slide */
+  monthKey = computed(() => `${this.viewDate().getFullYear()}-${this.viewDate().getMonth()}`);
 
   weeks = computed<CalendarDay[][]>(() => {
     const view = this.viewDate();
@@ -104,22 +116,32 @@ export class Calendar implements OnInit {
   async ngOnInit(): Promise<void> {
     await waitForDatabase(this.sqlite);
     await this.load();
+    this.triggerDaysCascade();
   }
 
   async prevMonth(): Promise<void> {
+    this.slideDirection.set('left');
     const d = this.viewDate();
     this.viewDate.set(new Date(d.getFullYear(), d.getMonth() - 1, 1));
     await this.load();
   }
 
   async nextMonth(): Promise<void> {
+    this.slideDirection.set('right');
     const d = this.viewDate();
     this.viewDate.set(new Date(d.getFullYear(), d.getMonth() + 1, 1));
     await this.load();
   }
 
   async goToday(): Promise<void> {
-    this.viewDate.set(new Date());
+    const current = this.viewDate();
+    const today = new Date();
+    const isSameMonth =
+      current.getFullYear() === today.getFullYear() && current.getMonth() === today.getMonth();
+    if (isSameMonth) return;
+
+    this.slideDirection.set(today.getTime() > current.getTime() ? 'right' : 'left');
+    this.viewDate.set(new Date(today.getFullYear(), today.getMonth(), 1));
     await this.load();
   }
 
@@ -143,6 +165,23 @@ export class Calendar implements OnInit {
     } finally {
       this.loading.set(false);
     }
+  }
+
+  /**
+   * Doble requestAnimationFrame: garantiza que el navegador ya pintó las
+   * celdas en su estado "oculto" antes de pasarlas a visible, para que la
+   * transición sí se anime en vez de aparecer de golpe. Solo se llama una
+   * vez, al abrir el calendario.
+   */
+  private triggerDaysCascade(): void {
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => this.daysAnimated.set(true));
+    });
+  }
+
+  /** Delay en cascada por celda, según su posición en la cuadrícula (fila-columna) */
+  dayDelay(weekIndex: number, dayIndex: number): number {
+    return (weekIndex * 7 + dayIndex) * 12;
   }
 
   /** Sólido si hay un solo color; conic-gradient partido en partes iguales si hay empate */

@@ -39,6 +39,9 @@ export class Stats implements OnInit {
   entryCount = signal(0);
   frequencies = signal<EmotionFrequency[]>([]);
 
+  /** Controla si las barras ya deben mostrar su ancho final (para poder animarlas desde 0) */
+  barsAnimated = signal(false);
+
   hasData = computed(() => this.frequencies().length > 0);
   maxCount = computed(() => this.frequencies()[0]?.count ?? 0);
 
@@ -59,6 +62,7 @@ export class Stats implements OnInit {
   async load(): Promise<void> {
     this.loading.set(true);
     this.loadError.set(null);
+    this.barsAnimated.set(false);
 
     try {
       const range = getDateRangeForPeriod(this.period());
@@ -75,11 +79,30 @@ export class Stats implements OnInit {
       this.loadError.set('No se pudieron cargar las estadísticas.');
     } finally {
       this.loading.set(false);
+      this.triggerBarsAnimation();
     }
   }
 
+  /**
+   * Doble requestAnimationFrame: el primero garantiza que el navegador ya
+   * pintó las barras en ancho 0 (recién insertadas al DOM); el segundo
+   * dispara el cambio a su ancho final para que el `transition` de la
+   * barra sí lo anime en vez de "saltar" directo al valor final.
+   */
+  private triggerBarsAnimation(): void {
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => this.barsAnimated.set(true));
+    });
+  }
+
   barWidth(count: number): number {
+    if (!this.barsAnimated()) return 0;
     if (this.maxCount() === 0) return 0;
     return Math.round((count / this.maxCount()) * 100);
+  }
+
+  /** Delay escalonado por fila, para que las barras entren una tras otra */
+  barDelay(index: number): number {
+    return index * 60;
   }
 }

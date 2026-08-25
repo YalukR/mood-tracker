@@ -37,7 +37,7 @@
     </button>
   </div>
 
-  <!-- Etiquetas de días de la semana -->
+  <!-- Etiquetas de días de la semana (fijas, no se animan) -->
   <div class="grid grid-cols-7 gap-1.5 px-0.5">
     @for (label of weekdayLabels; track label) {
       <span class="text-center text-xs font-medium text-muted dark:text-muted-dark">
@@ -46,32 +46,46 @@
     }
   </div>
 
-  <!-- Semanas -->
-  <div class="flex flex-col gap-1.5">
-    @for (week of weeks(); track $index) {
-      <div class="grid grid-cols-7 gap-1.5">
-        @for (day of week; track day.dateStr) {
-          <div
-            [title]="dayTitle(day)"
-            class="relative flex aspect-square items-center justify-center overflow-hidden rounded-xl
-                   text-sm transition-colors duration-300"
-            [class.bg-surface-alt]="day.colors.length === 0"
-            [class.dark:bg-surface-alt-dark]="day.colors.length === 0"
-            [class.opacity-40]="!day.isCurrentMonth"
-            [class.ring-2]="day.isToday"
-            [class.ring-blue]="day.isToday"
-            [class.dark:ring-blue-dark]="day.isToday"
-            [style.background]="dayBackground(day)"
-          >
-            <span
-              class="font-medium"
-              [class.text-white]="day.colors.length > 0"
-              [class.text-main]="day.colors.length === 0"
-              [class.dark:text-main-dark]="day.colors.length === 0"
-              [class.font-semibold]="day.isToday"
-            >
-              {{ day.dayNumber }}
-            </span>
+  <!-- Contenedor con overflow oculto para que el slide de mes no se salga del layout -->
+  <div class="overflow-hidden">
+    <!-- key = monthKey(): al cambiar de mes, Angular destruye y recrea este div,
+         lo que reinicia la animación de slide cada vez -->
+    @for (m of [monthKey()]; track m) {
+      <div
+        class="flex flex-col gap-1.5"
+        [class.animate-slide-from-left]="slideDirection() === 'left'"
+        [class.animate-slide-from-right]="slideDirection() === 'right'"
+      >
+        @for (week of weeks(); track $index; let wi = $index) {
+          <div class="grid grid-cols-7 gap-1.5">
+            @for (day of week; track day.dateStr; let di = $index) {
+              <div
+                [title]="dayTitle(day)"
+                class="relative flex aspect-square items-center justify-center overflow-hidden rounded-xl
+                       text-sm transition-all duration-300 ease-out"
+                [style.transition-delay.ms]="dayDelay(wi, di)"
+                [class.bg-surface-alt]="day.colors.length === 0"
+                [class.dark:bg-surface-alt-dark]="day.colors.length === 0"
+                [class.opacity-40]="!day.isCurrentMonth && daysAnimated()"
+                [class.opacity-0]="!daysAnimated()"
+                [class.scale-75]="!daysAnimated()"
+                [class.scale-100]="daysAnimated()"
+                [class.ring-2]="day.isToday"
+                [class.ring-blue]="day.isToday"
+                [class.dark:ring-blue-dark]="day.isToday"
+                [style.background]="dayBackground(day)"
+              >
+                <span
+                  class="font-medium"
+                  [class.text-white]="day.colors.length > 0"
+                  [class.text-main]="day.colors.length === 0"
+                  [class.dark:text-main-dark]="day.colors.length === 0"
+                  [class.font-semibold]="day.isToday"
+                >
+                  {{ day.dayNumber }}
+                </span>
+              </div>
+            }
           </div>
         }
       </div>
