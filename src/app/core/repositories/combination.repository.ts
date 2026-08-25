@@ -33,9 +33,13 @@ export class CombinationRepository {
 
     const db = this.sqlite.getDb();
 
-    // Traemos todas las combinaciones candidatas cuyo tamaño quepa dentro
-    // de lo seleccionado, de mayor a menor tamaño — así la primera que
-    // coincida exactamente ya es la más específica posible.
+    // 👇 DIAGNÓSTICO TEMPORAL — borrar después
+    const allCombos = await db.query(`SELECT * FROM combinations;`);
+    console.log('[Combination] TODAS las combinaciones en la tabla:', allCombos.values);
+    const allComponents = await db.query(`SELECT * FROM combination_components;`);
+    console.log('[Combination] TODOS los componentes:', allComponents.values);
+    // 👆 fin diagnóstico
+
     const res = await db.query(
       `SELECT c.id AS combination_id, c.result_emotion_id, c.color_hex, c.component_count
          FROM combinations c
@@ -44,12 +48,17 @@ export class CombinationRepository {
       [selectedBaseEmotionIds.length]
     );
 
+    console.log('[Combination] raw rows:', res.values); // 👈 diagnóstico 1
+
     const candidates = mapRows<{
       combinationId: number;
       resultEmotionId: number;
       colorHex: string;
       componentCount: number;
     }>(res.values);
+
+    console.log('[Combination] candidates mapeados:', candidates); // 👈 diagnóstico 2
+    console.log('[Combination] selectedBaseEmotionIds:', selectedBaseEmotionIds); // 👈 diagnóstico 3
 
     const selectedSet = new Set(selectedBaseEmotionIds);
 
@@ -59,6 +68,9 @@ export class CombinationRepository {
         [candidate.combinationId]
       );
       const componentIds: number[] = (componentsRes.values ?? []).map(r => r['emotion_id'] as number);
+
+      console.log(`[Combination] candidato ${candidate.combinationId}, componentes:`, componentIds); // 👈 diagnóstico 4
+
 
       const isExactSubsetMatch =
         componentIds.length > 0 &&

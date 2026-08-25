@@ -102,8 +102,14 @@ export class MoodForm implements OnInit {
         this.paletteRepo.getAll(),
       ]);
 
+      // Solo mostramos como chips las emociones "base" (Alegría, Tristeza, etc.)
+      // y las que el usuario creó a mano. Las que son resultado de una
+      // combinación (is_base = 0, is_custom = 0) quedan ocultas del grid:
+      // solo aparecen como sugerencia cuando findBestMatch() las detecta.
+      const visibleEmotions = emotions.filter(e => e.isBase || e.isCustom);
+
       this.chips.set(
-        emotions.map(emotion => ({
+        visibleEmotions.map(emotion => ({
           emotion,
           color: colorMap.get(emotion.id) ?? MoodForm.FALLBACK_COLOR,
         }))

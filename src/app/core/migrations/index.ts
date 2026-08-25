@@ -11,6 +11,7 @@ import { migration009CreateIndexes } from './009-create-indexes';
 import { migration010SeedBaseData } from './010-seed-base-data';
 import { migration011CreateAppSettings } from './011-create-app-settings';
 import { migration012SeedColorPalette } from './012-seed-color-palette';
+import { migration013SeedCombinations } from './013-seed-combinations';
 
 export const MIGRATIONS: Migration[] = [
   migration001CreateUsers,
@@ -24,5 +25,6 @@ export const MIGRATIONS: Migration[] = [
   migration009CreateIndexes,
   migration010SeedBaseData,
   migration011CreateAppSettings,
-  migration012SeedColorPalette,
+  migration012SeedColorPalette,  
+  migration013SeedCombinations,
 ];
