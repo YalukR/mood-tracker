@@ -1,1 +1,130 @@
-<p>documentation works!</p>
+<div class="flex flex-col gap-4 pb-4">
+
+  @for (key of cardOrder; track key) {
+    @switch (key) {
+
+      <!-- ═══════════════════ CARD: PROYECTO ═══════════════════ -->
+      @case ('project') {
+        <div class="rounded-2xl border border-border bg-surface-white p-4
+                    dark:border-border-dark dark:bg-surface-white-dark">
+          <div class="flex items-center gap-2">
+            <i class="pi pi-github text-lg text-main dark:text-main-dark"></i>
+            <h3 class="text-sm font-semibold text-main dark:text-main-dark">Proyecto</h3>
+          </div>
+
+          <p class="mt-2 text-sm leading-relaxed text-muted dark:text-muted-dark">
+            {{ teamDescription }}
+          </p>
+
+          <div class="mt-3 flex flex-col gap-2">
+            @for (contact of teamContacts; track contact.href) {
+              <button type="button"
+                class="flex items-center justify-between rounded-xl border-0 bg-surface-alt px-3 py-2.5
+                       text-left text-sm font-medium text-main transition-colors
+                       hover:bg-surface-alt/70 dark:bg-surface-alt-dark dark:text-main-dark"
+                (click)="openExternal(contact.href)">
+                <span class="flex items-center gap-2">
+                  <i class="pi" [class]="contact.icon"></i>
+                  {{ contact.label }}
+                </span>
+                <i class="pi pi-arrow-up-right text-xs text-muted dark:text-muted-dark"></i>
+              </button>
+            }
+          </div>
+
+          <p class="mt-3 text-xs text-muted dark:text-muted-dark">
+            Este proyecto es de código abierto — puedes revisar el código, reportar
+            problemas o proponer cambios directamente en el repositorio.
+          </p>
+        </div>
+      }
+
+      <!-- ═══════════════════ CARD: NOTICIAS ═══════════════════ -->
+      @case ('news') {
+        <div class="rounded-2xl border border-border bg-surface-white p-4
+                    dark:border-border-dark dark:bg-surface-white-dark">
+          <div class="flex items-center gap-2">
+            <i class="pi pi-megaphone text-lg text-main dark:text-main-dark"></i>
+            <h3 class="text-sm font-semibold text-main dark:text-main-dark">Noticias</h3>
+          </div>
+
+          <p class="mt-2 text-sm leading-relaxed text-muted dark:text-muted-dark">
+            Información pública sobre salud mental, seleccionada por el equipo.
+          </p>
+
+          <div class="mt-3 flex flex-col gap-2">
+            @for (item of newsItems; track item.id) {
+              <div class="overflow-hidden rounded-xl bg-surface-alt dark:bg-surface-alt-dark">
+                <button type="button"
+                  class="flex w-full items-start justify-between gap-2 border-0 bg-transparent
+                         px-3 py-2.5 text-left"
+                  (click)="onNewsClick(item)">
+                  <span class="flex flex-col gap-0.5">
+                    <span class="text-sm font-medium text-main dark:text-main-dark">
+                      {{ item.title }}
+                    </span>
+                    <span class="text-xs text-muted dark:text-muted-dark">
+                      {{ item.source }} · {{ item.summary }}
+                    </span>
+                  </span>
+                  <i class="pi flex-shrink-0 text-xs text-muted dark:text-muted-dark"
+                     [class.pi-arrow-up-right]="!item.content"
+                     [class.pi-chevron-down]="item.content && !isExpanded(item)"
+                     [class.pi-chevron-up]="item.content && isExpanded(item)"></i>
+                </button>
+
+                @if (item.content && isExpanded(item)) {
+                  <div class="border-t border-border px-3 py-2.5 text-sm leading-relaxed
+                              text-main dark:border-border-dark dark:text-main-dark">
+                    {{ item.content }}
+                  </div>
+                }
+              </div>
+            }
+          </div>
+        </div>
+      }
+
+      <!-- ═══════════════════ CARD: LÍNEAS DE ATENCIÓN ═══════════════════ -->
+      @case ('helplines') {
+        <div class="rounded-2xl border border-border bg-surface-white p-4
+                    dark:border-border-dark dark:bg-surface-white-dark">
+          <div class="flex items-center gap-2">
+            <i class="pi pi-heart text-lg text-danger dark:text-danger-dark"></i>
+            <h3 class="text-sm font-semibold text-main dark:text-main-dark">
+              Líneas de atención psicológica gratuitas
+            </h3>
+          </div>
+
+          <p class="mt-2 text-sm leading-relaxed text-main dark:text-main-dark">
+            Si necesitas ayuda, no tienes que esperar a una crisis para llamar.
+            Estas líneas son gratuitas, confidenciales y están disponibles las 24 horas.
+          </p>
+
+          <div class="mt-3 flex flex-col gap-2">
+            @for (line of helplines; track line.phone) {
+              <a [href]="'tel:' + line.phone"
+                class="flex items-center justify-between rounded-xl bg-surface-alt px-3 py-2.5
+                       no-underline transition-colors hover:bg-surface-alt/70
+                       dark:bg-surface-alt-dark">
+                <span class="flex flex-col gap-0.5">
+                  <span class="text-sm font-medium text-main dark:text-main-dark">
+                    {{ line.name }}
+                  </span>
+                  <span class="text-xs text-muted dark:text-muted-dark">
+                    {{ line.description }}
+                  </span>
+                </span>
+                <span class="flex-shrink-0 text-sm font-semibold text-blue dark:text-blue-dark">
+                  {{ line.displayPhone }}
+                </span>
+              </a>
+            }
+          </div>
+        </div>
+      }
+
+    }
+  }
+
+</div>
