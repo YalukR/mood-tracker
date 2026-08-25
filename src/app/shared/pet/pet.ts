@@ -1,7 +1,12 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { EmotionRepository, UserEmotionColorRepository, MoodEntryRepository } from '../../../core/repositories';
-import { EmotionModel } from '../../../core/models';
+import {
+  EmotionRepository,
+  UserEmotionColorRepository,
+  MoodEntryRepository,
+  CombinationRepository,
+} from '../../core/repositories';
+import { EmotionModel } from '../../core/models';
 
 interface Star {
   id: number;
@@ -54,6 +59,7 @@ export class Pet implements OnInit {
   private emotionRepo = inject(EmotionRepository);
   private userColorRepo = inject(UserEmotionColorRepository);
   private moodEntryRepo = inject(MoodEntryRepository);
+  private combinationRepo = inject(CombinationRepository);
 
   loading = signal(true);
 
@@ -117,7 +123,13 @@ export class Pet implements OnInit {
     }
   }
 
-  /** Color de un registro: si combina varias emociones base, elige una al azar entre ellas */
+  /**
+   * Color de un registro. Si combina varias emociones, elige una al azar
+   * entre las seleccionadas y resuelve su color en dos pasos:
+   *  1. Color elegido por el usuario (emociones base o custom) — user_emotion_colors.
+   *  2. Color fijo de la combinación, si la emoción es resultado de una
+   *     (ej. "Nostalgia") — combinations.color_hex, no depende del usuario.
+   */
   private async colorForEntry(
     moodEntryId: number,
     allEmotions: EmotionModel[],
@@ -126,15 +138,17 @@ export class Pet implements OnInit {
     const entryEmotions = await this.moodEntryRepo.getEmotionsForEntry(moodEntryId);
     const emotionIds = entryEmotions.map(e => e.emotionId);
 
-    const selectedBaseEmotions = allEmotions.filter(
-      e => e.isBase && emotionIds.includes(e.id)
-    );
-
-    if (selectedBaseEmotions.length === 0) {
+    const selectedEmotions = allEmotions.filter(e => emotionIds.includes(e.id));
+    if (selectedEmotions.length === 0) {
       return STAR_FALLBACK_COLOR;
     }
 
-    const chosen = selectedBaseEmotions[Math.floor(Math.random() * selectedBaseEmotions.length)];
-    return colorsMap.get(chosen.id) ?? STAR_FALLBACK_COLOR;
+    const chosen = selectedEmotions[Math.floor(Math.random() * selectedEmotions.length)];
+
+    const ownColor = colorsMap.get(chosen.id);
+    if (ownColor) return ownColor;
+
+    const comboColor = await this.combinationRepo.getColorForResultEmotion(chosen.id);
+    return comboColor ?? STAR_FALLBACK_COLOR;
   }
 }

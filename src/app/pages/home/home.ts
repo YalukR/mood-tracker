@@ -3,7 +3,7 @@ import { RouterModule } from '@angular/router';
 import { AppSettingsRepository } from '../../core/repositories';
 import { getRandomGreeting } from '../../core/utils/greetings.util';
 import { getRandomCuriosityFact } from '../../core/utils/curiosity-facts.util';
-import { Pet } from './pet/pet';
+import { Pet } from '../../shared/pet/pet';
 
 @Component({
   selector: 'app-home',

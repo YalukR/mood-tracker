@@ -98,4 +98,14 @@ export class CombinationRepository {
 
     return null;
   }
+
+  /** Color fijo definido por la combinación para su emoción resultado, o null si `emotionId` no es resultado de ninguna combinación */
+  async getColorForResultEmotion(emotionId: number): Promise<string | null> {
+    const db = this.sqlite.getDb();
+    const res = await db.query(
+      `SELECT color_hex FROM combinations WHERE result_emotion_id = ? LIMIT 1;`,
+      [emotionId]
+    );
+    return res.values?.[0]?.['color_hex'] ?? null;
+  }
 }
