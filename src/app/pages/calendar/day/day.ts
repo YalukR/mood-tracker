@@ -19,7 +19,7 @@ interface EmotionBadge {
 
 interface DayEntry {
   id: number;
-  time: string; // hora legible, ej. "14:32"
+  time: string;
   intensity: number;
   note: string | null;
   emotions: EmotionBadge[];
@@ -33,10 +33,15 @@ function formatTime(isoString: string): string {
 }
 
 function formatDateLabel(dateStr: string): string {
-  // dateStr viene como YYYY-MM-DD; se arma en local para evitar el corrimiento de día por UTC
   const [year, month, day] = dateStr.split('-').map(Number);
   const date = new Date(year, month - 1, day);
   return date.toLocaleDateString('es-MX', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+}
+
+/** Pseudoaleatorio determinista: la misma carta siempre cae con la misma rotación */
+function seededRandom(seed: number): number {
+  const x = Math.sin(seed) * 10000;
+  return x - Math.floor(x);
 }
 
 @Component({
@@ -64,6 +69,9 @@ export class Day implements OnInit, OnDestroy {
   dateLabel = signal('');
   entries = signal<DayEntry[]>([]);
 
+  /** controla la animación de "baraja repartida" al terminar de cargar */
+  ready = signal(false);
+
   async ngOnInit(): Promise<void> {
     const date = this.route.snapshot.paramMap.get('date');
     if (!date) {
@@ -76,7 +84,6 @@ export class Day implements OnInit, OnDestroy {
     const label = formatDateLabel(date);
     this.dateLabel.set(label);
 
-    // le "manda" el título y el botón de volver al header
     this.pageTitleService.setTitle(label.charAt(0).toUpperCase() + label.slice(1));
     this.pageTitleService.setBackPath('/calendar');
 
@@ -85,12 +92,13 @@ export class Day implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    // al salir de Day, el header vuelve a su estado normal (sin override, sin flecha)
     this.pageTitleService.clear();
   }
+
   async load(date: string): Promise<void> {
     this.loading.set(true);
     this.loadError.set(null);
+    this.ready.set(false);
 
     try {
       const [rawEntries, allEmotions, colorsMap] = await Promise.all([
@@ -122,6 +130,7 @@ export class Day implements OnInit, OnDestroy {
       }
 
       this.entries.set(dayEntries);
+      this.triggerDeal();
     } catch (err) {
       console.error('[Day] Error cargando los registros del día:', err);
       this.loadError.set('No se pudieron cargar los registros de este día.');
@@ -130,7 +139,18 @@ export class Day implements OnInit, OnDestroy {
     }
   }
 
-  /** Mismo criterio que en Pet: primero color elegido por el usuario, luego color fijo de combinación */
+  /** Doble rAF: asegura que el navegador pinte el estado inicial (oculto) antes de repartir la baraja */
+  private triggerDeal(): void {
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => this.ready.set(true));
+    });
+  }
+
+  /** Rotación de entrada determinista por carta, entre -8° y 8° */
+  cardRotation(entryId: number): number {
+    return (seededRandom(entryId) - 0.5) * 16;
+  }
+
   private async colorForEmotion(emotion: EmotionModel, colorsMap: Map<number, string>): Promise<string> {
     const ownColor = colorsMap.get(emotion.id);
     if (ownColor) return ownColor;

@@ -23,9 +23,10 @@
 
     <!-- Lista de registros -->
     <div class="flex flex-col gap-3">
-        @for (entry of entries(); track entry.id) {
-        <div
-            class="rounded-2xl border border-border bg-surface-white p-4 dark:border-border-dark dark:bg-surface-white-dark">
+        @for (entry of entries(); track entry.id; let i = $index) {
+        <div class="card-deal rounded-2xl border border-border bg-surface-white p-4 dark:border-border-dark dark:bg-surface-white-dark"
+            [class.card-deal--visible]="ready()" [style.--deal-delay]="(i * 90) + 'ms'"
+            [style.--deal-rotation]="cardRotation(entry.id) + 'deg'">
 
             <div class="flex items-center justify-between">
                 <span class="text-xs font-semibold uppercase tracking-wide text-muted dark:text-muted-dark">
