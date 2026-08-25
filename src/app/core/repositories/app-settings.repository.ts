@@ -5,6 +5,7 @@ import { generateSaltHex, hashWithSalt } from '../utils/crypto.util';
 const KEY_SETUP_COMPLETED_AT = 'setup_completed_at';
 const KEY_PASSWORD_HASH = 'password_hash';
 const KEY_PASSWORD_SALT = 'password_salt';
+const KEY_USERNAME = 'username';
 
 @Injectable({ providedIn: 'root' })
 export class AppSettingsRepository {
@@ -35,6 +36,14 @@ export class AppSettingsRepository {
     await this.setValue(KEY_SETUP_COMPLETED_AT, new Date().toISOString());
   }
 
+  async setUsername(name: string): Promise<void> {
+    await this.setValue(KEY_USERNAME, name);
+  }
+
+  async getUsername(): Promise<string | null> {
+    return this.getValue(KEY_USERNAME);
+  }
+
   async setPassword(password: string): Promise<void> {
     const salt = generateSaltHex();
     const hash = await hashWithSalt(password, salt);
@@ -42,7 +51,6 @@ export class AppSettingsRepository {
     await this.setValue(KEY_PASSWORD_HASH, hash);
   }
 
-  /** Reservado para cuando construyamos la pantalla de desbloqueo */
   async verifyPassword(password: string): Promise<boolean> {
     const salt = await this.getValue(KEY_PASSWORD_SALT);
     const storedHash = await this.getValue(KEY_PASSWORD_HASH);

@@ -12,7 +12,7 @@ import {
 } from '../../core/repositories';
 import { EmotionModel, ColorPaletteModel } from '../../core/models';
 
-type SetupStep = 'colors' | 'password';
+type SetupStep = 'name' | 'colors' | 'password';
 
 @Component({
   selector: 'app-setup',
@@ -30,10 +30,16 @@ export class Setup implements OnInit {
   private userColorRepo = inject(UserEmotionColorRepository);
   private appSettingsRepo = inject(AppSettingsRepository);
 
-  step = signal<SetupStep>('colors');
+  step = signal<SetupStep>('name');
   loading = signal(true);
   loadError = signal<string | null>(null);
 
+  // ── Paso 1: nombre ──
+  username = signal('');
+  usernameError = signal<string | null>(null);
+  private static readonly MAX_USERNAME_LENGTH = 30;
+
+  // ── Paso 2: colores ──
   baseEmotions = signal<EmotionModel[]>([]);
   palette = signal<ColorPaletteModel[]>([]);
   selections = signal<Map<number, number>>(new Map()); // emotionId -> colorPaletteId
@@ -50,6 +56,7 @@ export class Setup implements OnInit {
 
   canAdvance = computed(() => this.selectedColorForCurrentEmotion() !== null);
 
+  // ── Paso 3: contraseña ──
   password = signal('');
   confirmPassword = signal('');
   passwordError = signal<string | null>(null);
@@ -81,6 +88,25 @@ export class Setup implements OnInit {
     }
   }
 
+  // ── Paso 1: nombre ──
+  nextFromName(): void {
+    const trimmed = this.username().trim();
+
+    if (!trimmed) {
+      this.usernameError.set('Cuéntanos cómo te llamas.');
+      return;
+    }
+    if (trimmed.length > Setup.MAX_USERNAME_LENGTH) {
+      this.usernameError.set(`Máximo ${Setup.MAX_USERNAME_LENGTH} caracteres.`);
+      return;
+    }
+
+    this.usernameError.set(null);
+    this.username.set(trimmed);
+    this.step.set('colors');
+  }
+
+  // ── Paso 2: colores ──
   selectColor(colorId: number): void {
     const emotion = this.currentEmotion();
     if (!emotion) return;
@@ -99,10 +125,15 @@ export class Setup implements OnInit {
   }
 
   previousEmotion(): void {
-    if (this.currentEmotionIndex() === 0) return;
+    if (this.currentEmotionIndex() === 0) {
+      // ya estamos en la primera emoción, regresa al paso de nombre
+      this.step.set('name');
+      return;
+    }
     this.currentEmotionIndex.update(i => i - 1);
   }
 
+  // ── Paso 3: contraseña ──
   backToColors(): void {
     this.step.set('colors');
   }
@@ -125,6 +156,8 @@ export class Setup implements OnInit {
     this.saving.set(true);
 
     try {
+      await this.appSettingsRepo.setUsername(this.username());
+
       for (const [emotionId, colorId] of this.selections()) {
         await this.userColorRepo.setColor(emotionId, colorId);
       }
