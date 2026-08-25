@@ -2,6 +2,7 @@ import { Component, inject, computed } from '@angular/core';
 import { RouterModule, Router, NavigationEnd } from '@angular/router';
 import { filter, map, startWith } from 'rxjs/operators';
 import { toSignal } from '@angular/core/rxjs-interop';
+import { PageTitleService } from '../../core/services/page-title.service';
 
 interface HeaderIcon {
   path: string;
@@ -17,6 +18,7 @@ interface HeaderIcon {
 })
 export class PageHeader {
   private router = inject(Router);
+  private pageTitleService = inject(PageTitleService);
 
   icons: HeaderIcon[] = this.router.config
     .filter(route => route.data?.['headerIcon'])
@@ -40,5 +42,14 @@ export class PageHeader {
     { initialValue: this.router.url }
   );
 
-  title = computed(() => this.titleMap.get(this.activeUrl()) ?? '');
+  /** El título dinámico (si alguna página lo mandó) gana sobre el estático de la ruta */
+  title = computed(() => this.pageTitleService.override() ?? this.titleMap.get(this.activeUrl()) ?? '');
+
+  /** Solo se muestra la flecha si la página activa mandó una ruta de vuelta */
+  backPath = computed(() => this.pageTitleService.backPath());
+
+  goBack(): void {
+    const path = this.backPath();
+    if (path) this.router.navigate([path]);
+  }
 }

@@ -2,6 +2,7 @@ import { Component, inject, signal, computed, OnInit, ChangeDetectionStrategy } 
 import { SqliteService } from '../../core/services/sqlite.service';
 import { waitForDatabase } from '../../core/utils/wait-for-database.util';
 import { StatsRepository, DailyDominantColor } from '../../core/repositories';
+import { Router } from '@angular/router';
 
 interface CalendarDay {
   date: Date;
@@ -41,6 +42,7 @@ function isSameDay(a: Date, b: Date): boolean {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class Calendar implements OnInit {
+  private router = inject(Router);
   private sqlite = inject(SqliteService);
   private statsRepo = inject(StatsRepository);
 
@@ -198,5 +200,10 @@ export class Calendar implements OnInit {
 
   dayTitle(day: CalendarDay): string {
     return day.emotionNames.join(' / ');
+  }
+  
+  openDay(day: CalendarDay): void {
+    if (!day.isCurrentMonth) return; // evita abrir días "fantasma" de otro mes
+    this.router.navigate(['/day', day.dateStr]);
   }
 }
