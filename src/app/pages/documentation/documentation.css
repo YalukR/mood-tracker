@@ -20,3 +20,16 @@ a:active {
   transform: scale(0.98);
   transition: transform 100ms ease-out;
 }
+
+/* ── Animación de entrada de las cards al navegar a esta pestaña ── */
+.card-enter {
+  opacity: 0;
+  transform: translateY(12px);
+  transition: opacity 320ms ease-out, transform 320ms ease-out;
+  transition-delay: var(--card-delay, 0ms);
+}
+
+.card-enter--visible {
+  opacity: 1;
+  transform: translateY(0);
+}

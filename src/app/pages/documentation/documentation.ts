@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, OnInit } from '@angular/core';
 import { Browser } from '@capacitor/browser';
 
 /**
@@ -107,14 +107,14 @@ type CardKey = 'project' | 'news' | 'helplines';
   templateUrl: './documentation.html',
   styleUrl: './documentation.css',
 })
-export class Documentation {
+export class Documentation implements OnInit {
   /**
    * Orden de las 3 cards, de arriba a abajo. Para intercambiar el Proyecto
    * (arriba) con las Líneas de atención (abajo), como comentaste que tal
    * vez quieras hacer, solo cambia esto a:
    *   ['helplines', 'news', 'project']
    */
-  cardOrder: CardKey[] = ['helplines' , 'news', 'project'];
+  cardOrder: CardKey[] = ['helplines', 'news', 'project'];
 
   teamDescription = TEAM_DESCRIPTION;
   teamContacts = TEAM_CONTACTS;
@@ -125,6 +125,17 @@ export class Documentation {
 
   /** id del item de noticias actualmente expandido (solo uno a la vez) */
   expandedNewsId = signal<string | null>(null);
+
+  /** controla la animación de entrada de las cards al navegar a esta pestaña */
+  ready = signal(false);
+
+  ngOnInit(): void {
+    // doble rAF: asegura que el navegador pinte el estado inicial (oculto)
+    // antes de disparar la transición, si no a veces se salta la animación
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => this.ready.set(true));
+    });
+  }
 
   async openExternal(url: string): Promise<void> {
     await Browser.open({ url });

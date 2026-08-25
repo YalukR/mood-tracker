@@ -1,6 +1,7 @@
 <div class="flex flex-col gap-4 pb-4">
 
-  @for (key of cardOrder; track key) {
+  @for (key of cardOrder; track key; let i = $index) {
+    <div class="card-enter" [class.card-enter--visible]="ready()" [style.--card-delay]="(i * 80) + 'ms'">
     @switch (key) {
 
       <!-- ═══════════════════ CARD: PROYECTO ═══════════════════ -->
@@ -125,6 +126,7 @@
       }
 
     }
+    </div>
   }
 
 </div>
