@@ -18,9 +18,18 @@ export class Home implements OnInit {
   greeting = signal('');
   curiosityFact = signal('');
 
+  /** controla la entrada en cascada del contenido al abrir Home */
+  ready = signal(false);
+
   async ngOnInit(): Promise<void> {
     const name = await this.appSettingsRepo.getUsername();
     this.greeting.set(getRandomGreeting(name ?? ''));
     this.curiosityFact.set(getRandomCuriosityFact());
+
+    // doble rAF: asegura que el navegador pinte el estado inicial (oculto)
+    // antes de disparar la transición, si no a veces se salta la animación
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => this.ready.set(true));
+    });
   }
 }
