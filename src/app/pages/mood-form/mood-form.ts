@@ -1,4 +1,4 @@
-import { Component, inject, signal, computed, OnInit, ChangeDetectionStrategy } from '@angular/core';
+import { Component, inject, signal, computed, OnInit, OnDestroy, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -30,7 +30,7 @@ type SaveState = 'idle' | 'saving' | 'success';
   styleUrl: './mood-form.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class MoodForm implements OnInit {
+export class MoodForm implements OnInit, OnDestroy {
   private router = inject(Router);
   private messageService = inject(MessageService);
   private sqlite = inject(SqliteService);
@@ -56,6 +56,8 @@ export class MoodForm implements OnInit {
 
   // --- Estado de la sugerencia de combinación ---
   suggestion = signal<CombinationMatch | null>(null);
+  /** controla la transición de entrada/salida del card, independiente de si `suggestion` ya tiene dato o no */
+  suggestionVisible = signal(false);
   checkingSuggestion = signal(false);
 
   // --- Estado de creación de emoción custom ---
@@ -77,10 +79,18 @@ export class MoodForm implements OnInit {
 
   private static readonly FALLBACK_COLOR = '#c5b8a8';
   private static readonly SUCCESS_DISPLAY_MS = 900;
+  /** debe coincidir con la duración de transición de .suggestion-card en mood-form.css */
+  private static readonly SUGGESTION_LEAVE_MS = 260;
+
+  private suggestionLeaveTimer?: ReturnType<typeof setTimeout>;
 
   async ngOnInit(): Promise<void> {
     await this.waitForDatabase();
     await this.loadCatalog();
+  }
+
+  ngOnDestroy(): void {
+    clearTimeout(this.suggestionLeaveTimer);
   }
 
   private async waitForDatabase(): Promise<void> {
@@ -145,7 +155,7 @@ export class MoodForm implements OnInit {
     }
 
     this.selectedIds.set(current);
-    this.suggestion.set(null);
+    this.hideSuggestion();
     await this.checkForCombination();
   }
 
@@ -156,7 +166,7 @@ export class MoodForm implements OnInit {
       .map(c => c.emotion.id);
 
     if (baseIds.length < 2) {
-      this.suggestion.set(null);
+      this.hideSuggestion();
       return;
     }
 
@@ -165,8 +175,36 @@ export class MoodForm implements OnInit {
     const allSelectedIds = selected.map(c => c.emotion.id);
     const match = await this.combinationRepo.findBestMatch(baseIds, allSelectedIds);
 
-    this.suggestion.set(match);
+    if (match) {
+      this.showSuggestion(match);
+    } else {
+      this.hideSuggestion();
+    }
     this.checkingSuggestion.set(false);
+  }
+
+  /** Muestra el card de sugerencia y dispara su transición de entrada. */
+  private showSuggestion(match: CombinationMatch): void {
+    clearTimeout(this.suggestionLeaveTimer);
+    this.suggestion.set(match);
+    this.suggestionVisible.set(false);
+
+    // doble rAF, mismo truco que con `ready`: asegura que el navegador
+    // pinte el estado oculto antes de disparar la transición de entrada
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => this.suggestionVisible.set(true));
+    });
+  }
+
+  /** Dispara la transición de salida y solo hasta que termina retira el dato (lo que desmonta el @if). */
+  private hideSuggestion(): void {
+    if (!this.suggestion()) return;
+
+    this.suggestionVisible.set(false);
+    clearTimeout(this.suggestionLeaveTimer);
+    this.suggestionLeaveTimer = setTimeout(() => {
+      this.suggestion.set(null);
+    }, MoodForm.SUGGESTION_LEAVE_MS);
   }
 
   acceptSuggestion(): void {
@@ -187,11 +225,11 @@ export class MoodForm implements OnInit {
     }
 
     this.selectedIds.set(remaining);
-    this.suggestion.set(null);
+    this.hideSuggestion();
   }
 
   dismissSuggestion(): void {
-    this.suggestion.set(null);
+    this.hideSuggestion();
   }
 
   selectCustomColor(colorId: number): void {

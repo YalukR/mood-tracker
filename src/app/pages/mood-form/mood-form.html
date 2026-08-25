@@ -31,8 +31,7 @@
   <div class="grid grid-cols-3 gap-3">
     @for (chip of chips(); track chip.emotion.id; let i = $index) {
     <button type="button" class="chip-enter group relative flex flex-col items-center gap-2 rounded-3xl border-2 px-3 py-4
-             transition-all duration-200 ease-out active:scale-95"
-      [class.chip-enter--visible]="ready()"
+             transition-all duration-200 ease-out active:scale-95" [class.chip-enter--visible]="ready()"
       [style.--chip-delay]="(i * 45) + 'ms'"
       [style.border-color]="selectedIds().has(chip.emotion.id) ? chip.color : 'var(--color-border)'"
       [style.background-color]="selectedIds().has(chip.emotion.id) ? chip.color + '1a' : 'var(--color-surface-white)'"
@@ -59,10 +58,8 @@
     <!-- Botón para crear emoción custom -->
     <button type="button" class="chip-enter flex flex-col items-center justify-center gap-2 rounded-3xl border-2 border-dashed
            border-blue px-3 py-4 text-blue transition-colors dark:border-blue-dark dark:text-blue-dark
-           hover:bg-blue-soft dark:hover:bg-blue-soft-dark"
-      [class.chip-enter--visible]="ready()"
-      [style.--chip-delay]="(chips().length * 45) + 'ms'"
-      (click)="creatingCustom.set(true)">
+           hover:bg-blue-soft dark:hover:bg-blue-soft-dark" [class.chip-enter--visible]="ready()"
+      [style.--chip-delay]="(chips().length * 45) + 'ms'" (click)="creatingCustom.set(true)">
       <span class="flex h-11 w-11 items-center justify-center rounded-full bg-blue-soft dark:bg-blue-soft-dark">
         <i class="pi pi-plus text-sm"></i>
       </span>
@@ -124,7 +121,9 @@
   }
 
   @if (suggestion(); as match) {
-  <div class="rounded-2xl border border-blue bg-blue-soft p-4 dark:border-blue-dark dark:bg-blue-soft-dark">
+  <div
+    class="suggestion-card rounded-2xl border border-blue bg-blue-soft p-4 dark:border-blue-dark dark:bg-blue-soft-dark"
+    [class.suggestion-card--visible]="suggestionVisible()">
     <p class="mb-1 text-[10px] font-bold uppercase tracking-wide text-blue-dark dark:text-blue-dark">
       Sugerencia
     </p>
