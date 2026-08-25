@@ -8,10 +8,11 @@ import {
   EmotionRepository,
   CombinationRepository,
   UserEmotionColorRepository,
+  ColorPaletteRepository,
   MoodEntryRepository,
   CombinationMatch,
 } from '../../core/repositories';
-import { EmotionModel } from '../../core/models';
+import { EmotionModel, ColorPaletteModel } from '../../core/models';
 
 interface EmotionChip {
   emotion: EmotionModel;
@@ -35,6 +36,7 @@ export class MoodForm implements OnInit {
   private emotionRepo = inject(EmotionRepository);
   private combinationRepo = inject(CombinationRepository);
   private colorRepo = inject(UserEmotionColorRepository);
+  private paletteRepo = inject(ColorPaletteRepository);
   private moodEntryRepo = inject(MoodEntryRepository);
 
   // --- Estado del catálogo ---
@@ -54,7 +56,9 @@ export class MoodForm implements OnInit {
   // --- Estado de creación de emoción custom ---
   creatingCustom = signal(false);
   customName = signal('');
+  customColorId = signal<number | null>(null);
   customError = signal<string | null>(null);
+  palette = signal<ColorPaletteModel[]>([]);
 
   // --- Estado de guardado ---
   saveState = signal<SaveState>('idle');
@@ -92,9 +96,10 @@ export class MoodForm implements OnInit {
     this.loadError.set(null);
 
     try {
-      const [emotions, colorMap] = await Promise.all([
+      const [emotions, colorMap, palette] = await Promise.all([
         this.emotionRepo.getAll(),
         this.colorRepo.getAllColorsMap(),
+        this.paletteRepo.getAll(),
       ]);
 
       this.chips.set(
@@ -103,6 +108,7 @@ export class MoodForm implements OnInit {
           color: colorMap.get(emotion.id) ?? MoodForm.FALLBACK_COLOR,
         }))
       );
+      this.palette.set(palette);
     } catch (err) {
       console.error('[MoodForm] Error cargando catálogo:', err);
       this.loadError.set(err instanceof Error ? err.message : 'No se pudo cargar el catálogo de emociones.');
@@ -170,9 +176,30 @@ export class MoodForm implements OnInit {
     this.suggestion.set(null);
   }
 
+  selectCustomColor(colorId: number): void {
+    this.customColorId.set(colorId);
+    this.customError.set(null);
+  }
+
+  cancelCustomEmotion(): void {
+    this.creatingCustom.set(false);
+    this.customName.set('');
+    this.customColorId.set(null);
+    this.customError.set(null);
+  }
+
   async createCustomEmotion(): Promise<void> {
     const name = this.customName().trim();
-    if (!name) return;
+    const colorId = this.customColorId();
+
+    if (!name) {
+      this.customError.set('Ponle un nombre a tu emoción.');
+      return;
+    }
+    if (colorId === null) {
+      this.customError.set('Elige un color para esta emoción.');
+      return;
+    }
 
     this.customError.set(null);
 
@@ -181,9 +208,12 @@ export class MoodForm implements OnInit {
       const newEmotion = await this.emotionRepo.getById(newId);
       if (!newEmotion) return;
 
+      await this.colorRepo.setColor(newId, colorId);
+      const colorHex = this.palette().find(c => c.id === colorId)?.hex ?? MoodForm.FALLBACK_COLOR;
+
       this.chips.update(list => [
         ...list,
-        { emotion: newEmotion, color: MoodForm.FALLBACK_COLOR },
+        { emotion: newEmotion, color: colorHex },
       ]);
 
       const current = new Set(this.selectedIds());
@@ -191,6 +221,7 @@ export class MoodForm implements OnInit {
       this.selectedIds.set(current);
 
       this.customName.set('');
+      this.customColorId.set(null);
       this.creatingCustom.set(false);
     } catch (err) {
       this.customError.set(err instanceof Error ? err.message : 'No se pudo crear la emoción.');
