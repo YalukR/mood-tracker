@@ -13,6 +13,7 @@ import {
   CombinationMatch,
 } from '../../core/repositories';
 import { EmotionModel, ColorPaletteModel } from '../../core/models';
+import { NotificationService } from '../../core/services/notification.service';
 
 interface EmotionChip {
   emotion: EmotionModel;
@@ -38,6 +39,7 @@ export class MoodForm implements OnInit {
   private colorRepo = inject(UserEmotionColorRepository);
   private paletteRepo = inject(ColorPaletteRepository);
   private moodEntryRepo = inject(MoodEntryRepository);
+  private notificationService = inject(NotificationService);
 
   // --- Estado del catálogo ---
   chips = signal<EmotionChip[]>([]);
@@ -251,12 +253,15 @@ export class MoodForm implements OnInit {
     this.saveError.set(null);
 
     try {
+      const emotionIds = Array.from(this.selectedIds());
+
       await this.moodEntryRepo.create({
-        emotionIds: Array.from(this.selectedIds()),
+        emotionIds,
         intensity: this.intensity(),
         note: this.note().trim() || null,
       });
 
+      await this.notificationService.onEntrySaved(emotionIds);
       this.saveState.set('success');
 
       this.messageService.add({

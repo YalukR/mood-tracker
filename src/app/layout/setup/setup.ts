@@ -11,6 +11,7 @@ import {
   AppSettingsRepository,
 } from '../../core/repositories';
 import { EmotionModel, ColorPaletteModel } from '../../core/models';
+import { NotificationService } from '../../core/services/notification.service';
 
 type SetupStep = 'name' | 'colors' | 'password';
 
@@ -29,6 +30,7 @@ export class Setup implements OnInit {
   private paletteRepo = inject(ColorPaletteRepository);
   private userColorRepo = inject(UserEmotionColorRepository);
   private appSettingsRepo = inject(AppSettingsRepository);
+  private notificationService = inject(NotificationService);
 
   step = signal<SetupStep>('name');
   loading = signal(true);
@@ -164,6 +166,7 @@ export class Setup implements OnInit {
 
       await this.appSettingsRepo.setPassword(pwd);
       await this.appSettingsRepo.markSetupCompleted();
+      await this.notificationService.initialize();
 
       await this.router.navigate(['/home']);
     } catch (err) {
