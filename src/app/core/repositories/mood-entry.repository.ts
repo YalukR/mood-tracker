@@ -93,4 +93,25 @@ export class MoodEntryRepository {
     const day = String(date.getDate()).padStart(2, '0');
     return `${year}-${month}-${day}`;
   }
+
+  /** El registro más reciente del usuario, sin importar el día, o null si no hay ninguno */
+  async getLatestEntry(): Promise<MoodEntryModel | null> {
+    const db = this.sqlite.getDb();
+    const res = await db.query(
+      `SELECT * FROM mood_entries WHERE user_id = ? ORDER BY occurred_at DESC LIMIT 1;`,
+      [CURRENT_USER_ID]
+    );
+    const rows = mapRows<MoodEntryModel>(res.values);
+    return rows[0] ?? null;
+  }
+
+  /** Todos los registros del usuario, más recientes primero. Una estrella por cada uno. */
+  async getAllEntries(): Promise<MoodEntryModel[]> {
+    const db = this.sqlite.getDb();
+    const res = await db.query(
+      `SELECT * FROM mood_entries WHERE user_id = ? ORDER BY occurred_at DESC;`,
+      [CURRENT_USER_ID]
+    );
+    return mapRows<MoodEntryModel>(res.values);
+  }
 }

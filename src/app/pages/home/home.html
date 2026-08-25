@@ -1,17 +1,14 @@
 <div class="flex flex-col gap-6">
 
+  <app-pet></app-pet>
+
   <div class="text-center pt-4">
     <h1 class="text-xl font-bold text-main dark:text-main-dark">
       {{ greeting() }}
     </h1>
   </div>
 
-  <!-- Aquí vivirá la mascota más adelante -->
-  <div class="flex flex-col items-center justify-center gap-4 py-10">
-    <p class="text-sm text-muted dark:text-muted-dark">
-      (Espacio reservado para la mascota)
-    </p>
-  </div>
+  <div class="flex-1"></div>
 
   <a routerLink="/register"
     class="block rounded-2xl bg-blue py-4 text-center text-base font-semibold text-white shadow-sm
