@@ -37,18 +37,19 @@ export class App implements OnInit, OnDestroy {
   });
 
   private handleVisibilityChange = async (): Promise<void> => {
+    const lockEnabled = await this.appSettingsRepo.isLockEnabled();
+
     if (document.hidden) {
-      this.lockState.lock();
+      if (lockEnabled) this.lockState.lock();
       return;
     }
 
     const setupCompleted = await this.appSettingsRepo.isSetupCompleted();
-    if (setupCompleted && !this.lockState.unlocked()) {
+    if (setupCompleted && lockEnabled && !this.lockState.unlocked()) {
       this.router.navigate(['/lock']);
     }
 
-    // vuelve a foreground: recalcula recordatorios por si cambió el día
-    await this.notificationService.rescheduleAll(); // 👈 nuevo
+    await this.notificationService.rescheduleAll();
   };
 
   async ngOnInit(): Promise<void> {

@@ -9,7 +9,10 @@ export const lockGuard: CanActivateFn = async () => {
   const lockState = inject(LockStateService);
 
   const setupCompleted = await appSettingsRepo.isSetupCompleted();
-  if (!setupCompleted) return true; // sin password aún, no hay nada que bloquear
+  if (!setupCompleted) return true;
+
+  const lockEnabled = await appSettingsRepo.isLockEnabled(); 
+  if (!lockEnabled) return true;
 
   if (lockState.unlocked()) return true;
 

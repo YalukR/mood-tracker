@@ -1,1 +1,14 @@
 <app-theme></app-theme>
+
+<section class="mt-6">
+    <h2 class="text-sm font-semibold text-muted dark:text-muted-dark">Privacidad</h2>
+
+    <div
+        class="mt-2 flex items-center justify-between rounded-2xl bg-surface-white px-4 py-3 dark:bg-surface-white-dark">
+        <div>
+            <p class="text-sm font-medium text-main dark:text-main-dark">Bloqueo de aplicación</p>
+            <p class="text-xs text-muted dark:text-muted-dark">Pide contraseña al abrir la app</p>
+        </div>
+        <p-toggleswitch [ngModel]="lockEnabled()" (onChange)="onLockToggle($event.checked)" />
+    </div>
+</section>
