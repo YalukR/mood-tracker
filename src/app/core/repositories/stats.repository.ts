@@ -10,6 +10,14 @@ export interface EmotionFrequency {
   percentage: number;
 }
 
+export interface DailyDominantColor {
+  emotionId: number;
+  name: string;
+  colorHex: string;
+  count: number;
+}
+
+
 const CURRENT_USER_ID = 1;
 const FALLBACK_COLOR = '#c5b8a8';
 
@@ -65,4 +73,54 @@ export class StatsRepository {
     );
     return (res.values?.[0]?.['total'] as number) ?? 0;
   }
+
+  async getDailyDominantColors(start: string, end: string): Promise<Map<string, DailyDominantColor[]>> {
+    const db = this.sqlite.getDb();
+
+    const res = await db.query(
+      `SELECT
+       me.local_date AS local_date,
+       e.id AS emotion_id,
+       e.name AS name,
+       COUNT(*) AS count,
+       COALESCE(c.color_hex, cp.hex) AS color_hex
+     FROM mood_entry_emotions mee
+     INNER JOIN mood_entries me ON me.id = mee.mood_entry_id
+     INNER JOIN emotions e ON e.id = mee.emotion_id
+     LEFT JOIN combinations c ON c.result_emotion_id = e.id
+     LEFT JOIN user_emotion_colors uec ON uec.emotion_id = e.id AND uec.user_id = ?
+     LEFT JOIN color_palette cp ON cp.id = uec.color_palette_id
+     WHERE me.local_date BETWEEN ? AND ?
+     GROUP BY me.local_date, e.id
+     ORDER BY me.local_date ASC, count DESC;`,
+      [CURRENT_USER_ID, start, end]
+    );
+
+    const rows = res.values ?? [];
+
+    // agrupa por local_date preservando el orden (count DESC) que ya viene de SQL
+    const byDate = new Map<string, DailyDominantColor[]>();
+    for (const row of rows) {
+      const date = row['local_date'] as string;
+      const item: DailyDominantColor = {
+        emotionId: row['emotion_id'] as number,
+        name: row['name'] as string,
+        colorHex: (row['color_hex'] as string) ?? FALLBACK_COLOR,
+        count: row['count'] as number,
+      };
+      if (!byDate.has(date)) byDate.set(date, []);
+      byDate.get(date)!.push(item);
+    }
+
+    // por cada día, quédate solo con las que empatan en el conteo máximo
+    const result = new Map<string, DailyDominantColor[]>();
+    for (const [date, items] of byDate) {
+      const maxCount = items[0].count; // ya viene ordenado DESC
+      result.set(date, items.filter(i => i.count === maxCount));
+    }
+
+    return result;
+  }
+
 }
+
