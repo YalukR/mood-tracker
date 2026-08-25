@@ -44,6 +44,9 @@ export class MoodForm implements OnInit {
   loading = signal(true);
   loadError = signal<string | null>(null);
 
+  /** controla la entrada en cascada de los chips y el resto del form al terminar de cargar */
+  ready = signal(false);
+
   // --- Estado de la selección del usuario ---
   selectedIds = signal<Set<number>>(new Set());
   intensity = signal(5);
@@ -94,6 +97,7 @@ export class MoodForm implements OnInit {
   async loadCatalog(): Promise<void> {
     this.loading.set(true);
     this.loadError.set(null);
+    this.ready.set(false);
 
     try {
       const [emotions, colorMap, palette] = await Promise.all([
@@ -115,6 +119,12 @@ export class MoodForm implements OnInit {
         }))
       );
       this.palette.set(palette);
+
+      // doble rAF: asegura que el navegador pinte el estado inicial (oculto)
+      // antes de disparar la transición, si no a veces se salta la animación
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => this.ready.set(true));
+      });
     } catch (err) {
       console.error('[MoodForm] Error cargando catálogo:', err);
       this.loadError.set(err instanceof Error ? err.message : 'No se pudo cargar el catálogo de emociones.');
