@@ -8,6 +8,33 @@
   </span>
   }
 
-  <div class="sun sun--enter" [style.background]="sunColor()" [style.--sun-glow]="sunColor()"></div>
+  @for (planet of planets(); track planet.id) {
+  <div class="orbit-anchor orbit-anchor--enter" [class.orbit-anchor--snapping]="sunSnapping()"
+    [style.transform]="planetAnchorTransform(planet)" [style.--enter-delay]="planet.enterDelay + 'ms'">
+    <div class="orbit-spin" [style.width.px]="planet.orbitRadius * 2" [style.height.px]="planet.orbitRadius * 2"
+      [style.margin.px]="-planet.orbitRadius" [style.animation-duration.s]="planet.orbitDuration">
+      <span class="planet" [style.width.px]="planet.size" [style.height.px]="planet.size"
+        [style.background]="planet.color" [style.box-shadow]="'0 0 6px ' + planet.color"
+        [attr.aria-label]="planet.name">
+      </span>
+    </div>
+  </div>
+  }
+
+  <button type="button" class="sun-wrapper" [class.sun-wrapper--snapping]="sunSnapping()"
+    [style.transform]="'translateX(-50%) translate(' + sunDragOffset().x + 'px, ' + sunDragOffset().y + 'px)'"
+    (pointerdown)="onSunPointerDown($event)" (pointermove)="onSunPointerMove($event)"
+    (pointerup)="onSunPointerUp($event)" (pointercancel)="onSunPointerUp($event)" aria-label="El sol, eres tú">
+
+    <div class="sun sun--enter" [style.background]="sunColor()" [style.--sun-glow]="sunColor()"></div>
+
+    @if (sunFlare()) {
+    <span class="sun-flare"></span>
+    }
+  </button>
+
+  @if (sunMessage(); as message) {
+  <p class="sun-message">{{ message }}</p>
+  }
 
 </div>
