@@ -1,0 +1,15 @@
+<div
+    class="min-h-screen bg-surface-alt pb-[calc(5rem+env(safe-area-inset-bottom))] [padding-top:max(1.5rem,env(safe-area-inset-top))] dark:bg-surface-white-dark">
+  @if (showChrome()) {
+    <app-page-header></app-page-header>
+  }
+  <div
+    class="page-content px-4 [padding-left:max(1rem,env(safe-area-inset-left))] [padding-right:max(1rem,env(safe-area-inset-right))]">
+    <p-toast position="top-center" />
+    <br>
+    <router-outlet />
+  </div>
+  @if (showChrome()) {
+    <app-page-footer></app-page-footer>
+  }
+</div>

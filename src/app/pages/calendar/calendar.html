@@ -1,0 +1,96 @@
+@if (loading()) {
+  <div class="flex justify-center py-20">
+    <i class="pi pi-spin pi-spinner text-2xl text-blue dark:text-blue-dark"></i>
+  </div>
+} @else if (loadError()) {
+  <div class="flex flex-col items-center gap-3 py-20 text-center">
+    <p class="text-sm text-danger dark:text-danger-dark">{{ loadError() }}</p>
+    <button type="button" class="text-xs font-semibold text-blue underline dark:text-blue-dark" (click)="load()">
+      Reintentar
+    </button>
+  </div>
+} @else {
+
+<div class="flex flex-col gap-4 pb-4">
+
+  <!-- Navegación de mes -->
+  <div class="flex items-center justify-between">
+    <button type="button"
+      class="flex h-9 w-9 items-center justify-center rounded-full border-0 bg-transparent text-muted
+             transition-colors hover:bg-surface-alt dark:text-muted-dark dark:hover:bg-surface-alt-dark"
+      (click)="prevMonth()">
+      <i class="pi pi-chevron-left"></i>
+    </button>
+
+    <button type="button"
+      class="rounded-full border-0 bg-transparent px-3 py-1 text-base font-semibold capitalize
+             text-main dark:text-main-dark"
+      (click)="goToday()">
+      {{ monthLabel() }}
+    </button>
+
+    <button type="button"
+      class="flex h-9 w-9 items-center justify-center rounded-full border-0 bg-transparent text-muted
+             transition-colors hover:bg-surface-alt dark:text-muted-dark dark:hover:bg-surface-alt-dark"
+      (click)="nextMonth()">
+      <i class="pi pi-chevron-right"></i>
+    </button>
+  </div>
+
+  <!-- Etiquetas de días de la semana (fijas, no se animan) -->
+  <div class="grid grid-cols-7 gap-1.5 px-0.5">
+    @for (label of weekdayLabels; track label) {
+      <span class="text-center text-xs font-medium text-muted dark:text-muted-dark">
+        {{ label }}
+      </span>
+    }
+  </div>
+
+  <!-- Contenedor con overflow oculto para que el slide de mes no se salga del layout -->
+  <div class="overflow-hidden">
+    <!-- key = monthKey(): al cambiar de mes, Angular destruye y recrea este div,
+         lo que reinicia la animación de slide cada vez -->
+    @for (m of [monthKey()]; track m) {
+      <div
+        class="flex flex-col gap-1.5"
+        [class.animate-slide-from-left]="slideDirection() === 'left'"
+        [class.animate-slide-from-right]="slideDirection() === 'right'"
+      >
+        @for (week of weeks(); track $index; let wi = $index) {
+          <div class="grid grid-cols-7 gap-1.5">
+            @for (day of week; track day.dateStr; let di = $index) {
+              <div
+                [title]="dayTitle(day)"
+                class="relative flex aspect-square items-center justify-center overflow-hidden rounded-xl
+                       text-sm transition-all duration-300 ease-out"
+                [style.transition-delay.ms]="dayDelay(wi, di)"
+                [class.bg-surface-alt]="day.colors.length === 0"
+                [class.dark:bg-surface-alt-dark]="day.colors.length === 0"
+                [class.opacity-40]="!day.isCurrentMonth && daysAnimated()"
+                [class.opacity-0]="!daysAnimated()"
+                [class.scale-75]="!daysAnimated()"
+                [class.scale-100]="daysAnimated()"
+                [class.ring-2]="day.isToday"
+                [class.ring-blue]="day.isToday"
+                [class.dark:ring-blue-dark]="day.isToday"
+                [style.background]="dayBackground(day)"
+              >
+                <span
+                  class="font-medium"
+                  [class.text-white]="day.colors.length > 0"
+                  [class.text-main]="day.colors.length === 0"
+                  [class.dark:text-main-dark]="day.colors.length === 0"
+                  [class.font-semibold]="day.isToday"
+                >
+                  {{ day.dayNumber }}
+                </span>
+              </div>
+            }
+          </div>
+        }
+      </div>
+    }
+  </div>
+
+</div>
+}

@@ -1,0 +1,202 @@
+@import 'tailwindcss';
+@plugin 'tailwindcss-primeui';
+@import 'primeicons/primeicons.css';
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  /* Lavanda — primario, introspección/calma */
+  --color-blue: #8b7ec8;
+  --color-blue-dark: #b3a4e8;
+  --color-blue-soft: #f1eefb;
+  --color-blue-soft-dark: #2b2340;
+
+  /* Coral/durazno — acento cálido, energía positiva */
+  --color-green: #ec8f6e;
+  --color-green-dark: #f4a988;
+  --color-green-soft: #fdf0e9;
+  --color-green-soft-dark: #3a2a22;
+
+  /* Superficies crema — nada de blanco clínico */
+  --color-surface-white: #fbf3e8;
+  --color-surface-alt: #f2e6d4;
+  --color-surface-white-dark: #221d2c;
+  --color-surface-alt-dark: #2e2738;
+
+  --color-border: #e3d3ba;
+  --color-border-dark: #453a58;
+
+  --color-muted: #94816c;
+  --color-muted-dark: #a89bb8;
+
+  --color-main: #3a2f24;
+  --color-main-dark: #f2ece2;
+
+  /* Terracota — alerta suave, no "error crítico" */
+  --color-danger: #c96450;
+  --color-danger-dark: #e88f7c;
+}
+
+/* ============================================
+   Transiciones de navegación — slide aleatorio
+   (solo afecta .page-content, footer estático)
+   ============================================ */
+
+/* La raíz (footer, layout general) no anima nada */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+::view-transition-group(page-content) {
+  overflow: hidden;
+}
+
+::view-transition-old(page-content),
+::view-transition-new(page-content) {
+  animation-duration: 380ms;
+  animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  animation-fill-mode: both;
+  mix-blend-mode: normal;
+}
+
+html[data-transition='slide-left']::view-transition-old(page-content) {
+  animation-name: slide-out-left;
+}
+
+html[data-transition='slide-left']::view-transition-new(page-content) {
+  animation-name: slide-in-right;
+}
+
+html[data-transition='slide-right']::view-transition-old(page-content) {
+  animation-name: slide-out-right;
+}
+
+html[data-transition='slide-right']::view-transition-new(page-content) {
+  animation-name: slide-in-left;
+}
+
+html[data-transition='slide-up']::view-transition-old(page-content) {
+  animation-name: slide-out-up;
+}
+
+html[data-transition='slide-up']::view-transition-new(page-content) {
+  animation-name: slide-in-down;
+}
+
+html[data-transition='slide-down']::view-transition-old(page-content) {
+  animation-name: slide-out-down;
+}
+
+html[data-transition='slide-down']::view-transition-new(page-content) {
+  animation-name: slide-in-up;
+}
+
+@keyframes slide-out-left {
+  to {
+    transform: translateX(-100%);
+  }
+}
+
+@keyframes slide-in-right {
+  from {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes slide-out-right {
+  to {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes slide-in-left {
+  from {
+    transform: translateX(-100%);
+  }
+}
+
+@keyframes slide-out-up {
+  to {
+    transform: translateY(-100%);
+  }
+}
+
+@keyframes slide-in-down {
+  from {
+    transform: translateY(100%);
+  }
+}
+
+@keyframes slide-out-down {
+  to {
+    transform: translateY(100%);
+  }
+}
+
+@keyframes slide-in-up {
+  from {
+    transform: translateY(-100%);
+  }
+}
+
+:root {
+  --p-toast-success-background: var(--color-green-soft) !important;
+  --p-toast-success-border-color: var(--color-green) !important;
+  --p-toast-success-color: var(--color-main) !important;
+  --p-toast-success-detail-color: var(--color-muted) !important;
+  --p-toast-success-close-button-color: var(--color-muted) !important;
+  --p-toast-success-close-button-hover-background: color-mix(in srgb, var(--color-green) 15%, transparent) !important;
+
+  --p-toast-error-background: color-mix(in srgb, var(--color-danger) 12%, var(--color-surface-white)) !important;
+  --p-toast-error-border-color: var(--color-danger) !important;
+  --p-toast-error-color: var(--color-main) !important;
+  --p-toast-error-detail-color: var(--color-muted) !important;
+  --p-toast-error-close-button-color: var(--color-muted) !important;
+  --p-toast-error-close-button-hover-background: color-mix(in srgb, var(--color-danger) 15%, transparent) !important;
+
+  --p-toast-info-background: var(--color-blue-soft) !important;
+  --p-toast-info-border-color: var(--color-blue) !important;
+  --p-toast-info-color: var(--color-main) !important;
+  --p-toast-info-detail-color: var(--color-muted) !important;
+  --p-toast-info-close-button-color: var(--color-muted) !important;
+  --p-toast-info-close-button-hover-background: color-mix(in srgb, var(--color-blue) 15%, transparent) !important;
+
+  --p-toast-warn-background: var(--color-surface-alt) !important;
+  --p-toast-warn-border-color: var(--color-border) !important;
+  --p-toast-warn-color: var(--color-main) !important;
+  --p-toast-warn-detail-color: var(--color-muted) !important;
+  --p-toast-warn-close-button-color: var(--color-muted) !important;
+  --p-toast-warn-close-button-hover-background: color-mix(in srgb, var(--color-border) 40%, transparent) !important;
+}
+
+.dark {
+  --p-toast-success-background: var(--color-green-soft-dark) !important;
+  --p-toast-success-border-color: var(--color-green-dark) !important;
+  --p-toast-success-color: var(--color-main-dark) !important;
+  --p-toast-success-detail-color: var(--color-muted-dark) !important;
+  --p-toast-success-close-button-color: var(--color-muted-dark) !important;
+  --p-toast-success-close-button-hover-background: color-mix(in srgb, var(--color-green-dark) 20%, transparent) !important;
+
+  --p-toast-error-background: color-mix(in srgb, var(--color-danger-dark) 15%, var(--color-surface-white-dark)) !important;
+  --p-toast-error-border-color: var(--color-danger-dark) !important;
+  --p-toast-error-color: var(--color-main-dark) !important;
+  --p-toast-error-detail-color: var(--color-muted-dark) !important;
+  --p-toast-error-close-button-color: var(--color-muted-dark) !important;
+  --p-toast-error-close-button-hover-background: color-mix(in srgb, var(--color-danger-dark) 20%, transparent) !important;
+
+  --p-toast-info-background: var(--color-blue-soft-dark) !important;
+  --p-toast-info-border-color: var(--color-blue-dark) !important;
+  --p-toast-info-color: var(--color-main-dark) !important;
+  --p-toast-info-detail-color: var(--color-muted-dark) !important;
+  --p-toast-info-close-button-color: var(--color-muted-dark) !important;
+  --p-toast-info-close-button-hover-background: color-mix(in srgb, var(--color-blue-dark) 20%, transparent) !important;
+
+  --p-toast-warn-background: var(--color-surface-alt-dark) !important;
+  --p-toast-warn-border-color: var(--color-border-dark) !important;
+  --p-toast-warn-color: var(--color-main-dark) !important;
+  --p-toast-warn-detail-color: var(--color-muted-dark) !important;
+  --p-toast-warn-close-button-color: var(--color-muted-dark) !important;
+  --p-toast-warn-close-button-hover-background: color-mix(in srgb, var(--color-border-dark) 40%, transparent) !important;
+}

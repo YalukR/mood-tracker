@@ -1,0 +1,35 @@
+@keyframes fade-in-down {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* El contenido expandido de una noticia entra suave, no de golpe */
+:host ::ng-deep [class*='border-t'] {
+  animation: fade-in-down 180ms ease-out;
+}
+
+/* Feedback táctil al presionar cualquier botón/link de las cards */
+button:active,
+a:active {
+  transform: scale(0.98);
+  transition: transform 100ms ease-out;
+}
+
+/* ── Animación de entrada de las cards al navegar a esta pestaña ── */
+.card-enter {
+  opacity: 0;
+  transform: translateY(12px);
+  transition: opacity 320ms ease-out, transform 320ms ease-out;
+  transition-delay: var(--card-delay, 0ms);
+}
+
+.card-enter--visible {
+  opacity: 1;
+  transform: translateY(0);
+}
