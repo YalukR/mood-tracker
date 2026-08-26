@@ -1,0 +1,18 @@
+:host {
+  display: block;
+}
+
+/* ── Animación de "baraja repartida": cada carta cae desde arriba, rotada, y se acomoda con rebote ── */
+.card-deal {
+  opacity: 0;
+  transform: translateY(-90px) rotate(var(--deal-rotation, 0deg)) scale(0.9);
+  transition:
+    opacity 260ms ease-out,
+    transform 520ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  transition-delay: var(--deal-delay, 0ms);
+}
+
+.card-deal--visible {
+  opacity: 1;
+  transform: translateY(0) rotate(0deg) scale(1);
+}

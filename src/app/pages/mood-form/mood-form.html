@@ -14,7 +14,7 @@
 } @else {<div class="flex flex-col gap-6 pb-4">
 
   <!-- Encabezado -->
-  <div>
+  <div class="content-enter" [class.content-enter--visible]="ready()" [style.--enter-delay]="'0ms'">
     <h1 class="text-2xl font-bold text-main dark:text-main-dark">¿Cómo te sientes?</h1>
     <p class="mt-1.5 text-sm leading-relaxed text-muted dark:text-muted-dark">
       Puedes elegir más de una opción
@@ -29,9 +29,10 @@
 
   <!-- Chips de emociones -->
   <div class="grid grid-cols-3 gap-3">
-    @for (chip of chips(); track chip.emotion.id) {
-    <button type="button" class="group relative flex flex-col items-center gap-2 rounded-3xl border-2 px-3 py-4
-             transition-all duration-200 ease-out active:scale-95"
+    @for (chip of chips(); track chip.emotion.id; let i = $index) {
+    <button type="button" class="chip-enter group relative flex flex-col items-center gap-2 rounded-3xl border-2 px-3 py-4
+             transition-all duration-200 ease-out active:scale-95" [class.chip-enter--visible]="ready()"
+      [style.--chip-delay]="(i * 45) + 'ms'"
       [style.border-color]="selectedIds().has(chip.emotion.id) ? chip.color : 'var(--color-border)'"
       [style.background-color]="selectedIds().has(chip.emotion.id) ? chip.color + '1a' : 'var(--color-surface-white)'"
       (click)="toggleEmotion(chip.emotion.id)">
@@ -55,9 +56,10 @@
     }
 
     <!-- Botón para crear emoción custom -->
-    <button type="button" class="flex flex-col items-center justify-center gap-2 rounded-3xl border-2 border-dashed
+    <button type="button" class="chip-enter flex flex-col items-center justify-center gap-2 rounded-3xl border-2 border-dashed
            border-blue px-3 py-4 text-blue transition-colors dark:border-blue-dark dark:text-blue-dark
-           hover:bg-blue-soft dark:hover:bg-blue-soft-dark" (click)="creatingCustom.set(true)">
+           hover:bg-blue-soft dark:hover:bg-blue-soft-dark" [class.chip-enter--visible]="ready()"
+      [style.--chip-delay]="(chips().length * 45) + 'ms'" (click)="creatingCustom.set(true)">
       <span class="flex h-11 w-11 items-center justify-center rounded-full bg-blue-soft dark:bg-blue-soft-dark">
         <i class="pi pi-plus text-sm"></i>
       </span>
@@ -119,7 +121,9 @@
   }
 
   @if (suggestion(); as match) {
-  <div class="rounded-2xl border border-blue bg-blue-soft p-4 dark:border-blue-dark dark:bg-blue-soft-dark">
+  <div
+    class="suggestion-card rounded-2xl border border-blue bg-blue-soft p-4 dark:border-blue-dark dark:bg-blue-soft-dark"
+    [class.suggestion-card--visible]="suggestionVisible()">
     <p class="mb-1 text-[10px] font-bold uppercase tracking-wide text-blue-dark dark:text-blue-dark">
       Sugerencia
     </p>
@@ -146,7 +150,7 @@
   }
 
   <!-- Intensidad -->
-  <div>
+  <div class="content-enter" [class.content-enter--visible]="ready()" [style.--enter-delay]="'220ms'">
     <div class="mb-2 flex items-center justify-between">
       <label class="text-xs font-semibold uppercase tracking-wide text-muted dark:text-muted-dark">
         Intensidad
@@ -162,7 +166,7 @@
   </div>
 
   <!-- Nota libre -->
-  <div>
+  <div class="content-enter" [class.content-enter--visible]="ready()" [style.--enter-delay]="'280ms'">
     <label class="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-muted dark:text-muted-dark">
       Nota (opcional)
     </label>
@@ -177,7 +181,7 @@
   }
 
   <!-- Acciones -->
-  <div class="flex gap-3">
+  <div class="content-enter flex gap-3" [class.content-enter--visible]="ready()" [style.--enter-delay]="'340ms'">
     <button type="button" class="flex-1 rounded-2xl border border-border py-3 text-sm font-semibold text-muted
                transition-opacity disabled:opacity-40
                dark:border-border-dark dark:text-muted-dark" [disabled]="saveState() !== 'idle'" (click)="cancel()">

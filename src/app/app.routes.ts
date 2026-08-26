@@ -40,6 +40,12 @@ export const routes: Routes = [
         data: { icon: 'pi-calendar', label: 'Calendario', title: 'Calendario' },
     },
     {
+        path: 'day/:date',
+        loadComponent: () => import('./pages/calendar/day/day').then(m => m.Day),
+        canActivate: [setupCompletedGuard, lockGuard],
+        data: { title: 'Registro del día' },
+    },
+    {
         path: 'settings',
         loadComponent: () => import('./pages/settings/settings').then(m => m.Settings),
         canActivate: [setupCompletedGuard, lockGuard],

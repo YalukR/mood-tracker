@@ -3,12 +3,11 @@ import { RouterOutlet, Router, NavigationEnd } from '@angular/router';
 import { filter, map, startWith } from 'rxjs/operators';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ToastModule } from 'primeng/toast';
-import { App as CapacitorApp } from '@capacitor/app';
-import { PluginListenerHandle } from '@capacitor/core';
 import { PageFooter } from './layout/page-footer/page-footer';
 import { PageHeader } from './layout/page-header/page-header';
 import { LockStateService } from './core/services/lock-state.service';
 import { AppSettingsRepository } from './core/repositories';
+import { NotificationService } from './core/services/notification.service';
 
 @Component({
   selector: 'app-root',
@@ -20,9 +19,8 @@ export class App implements OnInit, OnDestroy {
   private router = inject(Router);
   private lockState = inject(LockStateService);
   private appSettingsRepo = inject(AppSettingsRepository);
+  private notificationService = inject(NotificationService);
   protected readonly title = signal('mood-tracker');
-
-  private listenerHandle: PluginListenerHandle | null = null;
 
   private currentUrl = toSignal(
     this.router.events.pipe(
@@ -38,23 +36,33 @@ export class App implements OnInit, OnDestroy {
     return !url.startsWith('/setup') && !url.startsWith('/lock');
   });
 
-  async ngOnInit(): Promise<void> {
-    this.listenerHandle = await CapacitorApp.addListener('appStateChange', async ({ isActive }) => {
-      if (!isActive) {
-        // se va a background: bloquea la sesión
-        this.lockState.lock();
-        return;
-      }
+  private handleVisibilityChange = async (): Promise<void> => {
+    const lockEnabled = await this.appSettingsRepo.isLockEnabled();
 
-      // vuelve a foreground: si hay password configurada y sigue bloqueada, manda al lock
-      const setupCompleted = await this.appSettingsRepo.isSetupCompleted();
-      if (setupCompleted && !this.lockState.unlocked()) {
-        this.router.navigate(['/lock']);
-      }
-    });
+    if (document.hidden) {
+      if (lockEnabled) this.lockState.lock();
+      return;
+    }
+
+    const setupCompleted = await this.appSettingsRepo.isSetupCompleted();
+    if (setupCompleted && lockEnabled && !this.lockState.unlocked()) {
+      this.router.navigate(['/lock']);
+    }
+
+    await this.notificationService.rescheduleAll();
+  };
+
+  async ngOnInit(): Promise<void> {
+    document.addEventListener('visibilitychange', this.handleVisibilityChange);
+
+    // solo pide permiso y programa recordatorios si el setup ya está hecho
+    const setupCompleted = await this.appSettingsRepo.isSetupCompleted();
+    if (setupCompleted) {
+      await this.notificationService.initialize(); // 👈 nuevo
+    }
   }
 
   ngOnDestroy(): void {
-    this.listenerHandle?.remove();
+    document.removeEventListener('visibilitychange', this.handleVisibilityChange);
   }
 }

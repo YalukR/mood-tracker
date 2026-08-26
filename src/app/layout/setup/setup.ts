@@ -11,8 +11,9 @@ import {
   AppSettingsRepository,
 } from '../../core/repositories';
 import { EmotionModel, ColorPaletteModel } from '../../core/models';
+import { NotificationService } from '../../core/services/notification.service';
 
-type SetupStep = 'name' | 'colors' | 'password';
+type SetupStep = 'name' | 'colors' | 'password' | 'notifications' | 'about';
 
 @Component({
   selector: 'app-setup',
@@ -29,6 +30,7 @@ export class Setup implements OnInit {
   private paletteRepo = inject(ColorPaletteRepository);
   private userColorRepo = inject(UserEmotionColorRepository);
   private appSettingsRepo = inject(AppSettingsRepository);
+  private notificationService = inject(NotificationService);
 
   step = signal<SetupStep>('name');
   loading = signal(true);
@@ -61,6 +63,7 @@ export class Setup implements OnInit {
   confirmPassword = signal('');
   passwordError = signal<string | null>(null);
   saving = signal(false);
+
 
   private static readonly MIN_PASSWORD_LENGTH = 4;
 
@@ -137,7 +140,13 @@ export class Setup implements OnInit {
   backToColors(): void {
     this.step.set('colors');
   }
+  // ── Paso 4: notificaciones ──
+  savingNotifications = signal(false); // 👈 nuevo, evita doble tap mientras se pide permiso
 
+  // ── Paso 5: about ──
+  completingSetup = signal(false); // 👈 nuevo
+
+  // ── Paso 3: contraseña (modificado) ──
   async finish(): Promise<void> {
     this.passwordError.set(null);
 
@@ -163,14 +172,47 @@ export class Setup implements OnInit {
       }
 
       await this.appSettingsRepo.setPassword(pwd);
-      await this.appSettingsRepo.markSetupCompleted();
 
-      await this.router.navigate(['/home']);
+      this.step.set('notifications'); // 👈 antes: markSetupCompleted + navigate a /home
     } catch (err) {
       console.error('[Setup] Error guardando configuración inicial:', err);
       this.passwordError.set('No se pudo guardar tu configuración. Intenta de nuevo.');
     } finally {
       this.saving.set(false);
+    }
+  }
+
+  // ── Paso 4: notificaciones ──
+  async chooseNotifications(accepted: boolean): Promise<void> {
+    if (this.savingNotifications()) return;
+    this.savingNotifications.set(true);
+
+    try {
+      await this.appSettingsRepo.setNotificationsEnabled(accepted);
+      if (accepted) {
+        await this.notificationService.initialize();
+      }
+      this.step.set('about');
+    } catch (err) {
+      console.error('[Setup] Error configurando notificaciones:', err);
+      // no bloqueamos el flujo por esto — seguimos a "about" de todos modos
+      this.step.set('about');
+    } finally {
+      this.savingNotifications.set(false);
+    }
+  }
+
+  // ── Paso 5: about ──
+  async completeSetup(): Promise<void> {
+    if (this.completingSetup()) return;
+    this.completingSetup.set(true);
+
+    try {
+      await this.appSettingsRepo.markSetupCompleted();
+      await this.router.navigate(['/home']);
+    } catch (err) {
+      console.error('[Setup] Error finalizando el setup:', err);
+      this.completingSetup.set(false); // 👈 deja reintentar si falla
     }
   }
 }

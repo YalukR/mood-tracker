@@ -6,6 +6,8 @@ const KEY_SETUP_COMPLETED_AT = 'setup_completed_at';
 const KEY_PASSWORD_HASH = 'password_hash';
 const KEY_PASSWORD_SALT = 'password_salt';
 const KEY_USERNAME = 'username';
+const KEY_LOCK_ENABLED = 'lock_enabled';
+const KEY_NOTIFICATIONS_ENABLED = 'notifications_enabled';
 
 @Injectable({ providedIn: 'root' })
 export class AppSettingsRepository {
@@ -58,5 +60,23 @@ export class AppSettingsRepository {
 
     const hash = await hashWithSalt(password, salt);
     return hash === storedHash;
+  }
+
+  async isLockEnabled(): Promise<boolean> {
+    const value = await this.getValue(KEY_LOCK_ENABLED);
+    return value === null ? true : value === '1';
+  }
+
+  async setLockEnabled(enabled: boolean): Promise<void> {
+    await this.setValue(KEY_LOCK_ENABLED, enabled ? '1' : '0');
+  }
+
+  async setNotificationsEnabled(enabled: boolean): Promise<void> {
+    await this.setValue(KEY_NOTIFICATIONS_ENABLED, enabled ? '1' : '0');
+  }
+
+  async isNotificationsEnabled(): Promise<boolean> {
+    const value = await this.getValue(KEY_NOTIFICATIONS_ENABLED);
+    return value === null ? true : value === '1'; // sin preferencia guardada = default activo
   }
 }

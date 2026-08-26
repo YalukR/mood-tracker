@@ -1,67 +1,59 @@
-# Mood Tracker
+# MoodTracker
 
-Una app simple para registrar cómo te sientes. Nada más, nada menos.
+This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 21.2.15.
 
-## ¿Por qué existe?
+## Development server
 
-La mayoría de las apps para registrar el estado de ánimo recopilan tu información: la suben a un servidor, la analizan, a veces la comparten con terceros. Tu estado de ánimo es información profundamente personal, y creo que debería quedarse así: **privada, local, y bajo tu control**. Si algún día quieres compartirla con tu terapeuta, un amigo o quien sea, esa decisión es tuya — no de una empresa.
-
-Además, esta app parte de una idea simple: **no hay emociones negativas, solo emociones**. No vas a encontrar categorías como "mal día" o "emoción negativa" aquí. Sentir tristeza, enojo o ansiedad no es un fallo a corregir; es información tan válida como sentir alegría o calma.
-
-## Características
-
-- **100% sin conexión** — la app nunca necesita internet para funcionar.
-- **Datos privados por diseño** — toda la información vive en tu dispositivo, en una base de datos local. Nada sale de tu teléfono a menos que tú lo decidas explícitamente.
-- Registro de emociones, combinaciones de emociones y colores personalizables.
-- Calendario y estadísticas de tus registros a lo largo del tiempo.
-- Bloqueo de app opcional con contraseña.
-- Detalles pequeños para hacer el registro diario menos una tarea y más un momento.
-
-## Stack técnico
-
-- **[Angular](https://angular.dev/)** (standalone components, signals, `OnPush`)
-- **[Capacitor](https://capacitorjs.com/)** para empaquetar como APK/app nativa
-- **SQLite local** (vía `sql-wasm`) como única fuente de almacenamiento — sin backend, sin API, sin base de datos remota
-- **[PrimeNG](https://primeng.org/)** para componentes de UI
-- **Tailwind CSS**
-
-## Desarrollo
-
-### Requisitos
-
-- Node.js
-- Angular CLI
-
-### Instalación
-
-```bash
-git clone https://github.com/YalukR/mood-tracker.git
-cd mood-tracker
-npm install
-```
-
-### Levantar en desarrollo
+To start a local development server, run:
 
 ```bash
 ng serve
 ```
 
-### Generar el APK con Capacitor
+Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+
+## Code scaffolding
+
+Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+
+```bash
+ng generate component component-name
+```
+
+For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+
+```bash
+ng generate --help
+```
+
+## Building
+
+To build the project run:
 
 ```bash
 ng build
-npx cap sync android
-npx cap open android
 ```
 
-Desde Android Studio puedes compilar y firmar el APK normalmente.
+This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
 
-## Estado del proyecto
+## Running unit tests
 
-Este es un proyecto personal que mantengo yo solo, sin fines de lucro. Lo comparto porque creo que este tipo de herramientas debería existir de forma abierta y transparente, no porque busque construir un producto o negocio a partir de él. Si te sirve, úsalo; si quieres modificarlo para tus propias necesidades, la licencia te lo permite.
+To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use the following command:
 
-## Licencia
+```bash
+ng test
+```
 
-Este proyecto está licenciado bajo la **[GNU Affero General Public License v3.0](LICENSE)**.
+## Running end-to-end tests
 
-En resumen: puedes usar, estudiar, modificar y compartir este código libremente. Si modificas el proyecto y lo ofreces como un servicio (por ejemplo, corriéndolo en un servidor al que otros acceden), estás obligado a compartir el código fuente de tus modificaciones bajo la misma licencia. Esto existe para asegurar que este proyecto —y cualquier derivado— se mantenga abierto y respetuoso con la privacidad de quien lo use.
+For end-to-end (e2e) testing, run:
+
+```bash
+ng e2e
+```
+
+Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
+
+## Additional Resources
+
+For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.

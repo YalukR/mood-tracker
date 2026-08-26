@@ -1,1 +1,82 @@
 <app-theme></app-theme>
+
+<section class="mt-6">
+  <h2 class="text-sm font-semibold text-muted dark:text-muted-dark">Privacidad</h2>
+
+  <div class="mt-2 flex flex-col gap-2">
+    <div class="flex items-center justify-between rounded-2xl bg-surface-white px-4 py-3 dark:bg-surface-white-dark">
+      <div>
+        <p class="text-sm font-medium text-main dark:text-main-dark">Bloqueo de aplicación</p>
+        <p class="text-xs text-muted dark:text-muted-dark">Pide contraseña al abrir la app</p>
+      </div>
+      <p-toggleswitch [ngModel]="lockEnabled()" (onChange)="onLockToggle($event.checked)" />
+    </div>
+
+    <div class="flex items-center justify-between rounded-2xl bg-surface-white px-4 py-3 dark:bg-surface-white-dark">
+      <div>
+        <p class="text-sm font-medium text-main dark:text-main-dark">Notificaciones</p>
+        <p class="text-xs text-muted dark:text-muted-dark">Recordatorios para registrar cómo te sientes</p>
+      </div>
+      <p-toggleswitch [ngModel]="notificationsEnabled()" (onChange)="onNotificationsToggle($event.checked)" />
+    </div>
+  </div>
+</section>
+
+<section class="mt-6">
+  <h2 class="text-sm font-semibold text-muted dark:text-muted-dark">Seguridad</h2>
+
+  <div class="mt-2 flex flex-col gap-3 rounded-2xl bg-surface-white px-4 py-4 dark:bg-surface-white-dark">
+    <div>
+      <label class="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-muted dark:text-muted-dark">
+        Contraseña actual
+      </label>
+      <input type="password"
+        class="w-full rounded-xl border border-border bg-surface-alt px-3 py-2.5 text-sm text-main
+               outline-none focus:border-blue dark:border-border-dark dark:bg-surface-alt-dark
+               dark:text-main-dark dark:focus:border-blue-dark"
+        [ngModel]="currentPassword()"
+        (ngModelChange)="currentPassword.set($event); changePasswordError.set(null)" />
+    </div>
+
+    <div>
+      <label class="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-muted dark:text-muted-dark">
+        Nueva contraseña
+      </label>
+      <input type="password"
+        class="w-full rounded-xl border border-border bg-surface-alt px-3 py-2.5 text-sm text-main
+               outline-none focus:border-blue dark:border-border-dark dark:bg-surface-alt-dark
+               dark:text-main-dark dark:focus:border-blue-dark"
+        [ngModel]="newPassword()"
+        (ngModelChange)="newPassword.set($event); changePasswordError.set(null)" />
+    </div>
+
+    <div>
+      <label class="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-muted dark:text-muted-dark">
+        Repetir nueva contraseña
+      </label>
+      <input type="password"
+        class="w-full rounded-xl border border-border bg-surface-alt px-3 py-2.5 text-sm text-main
+               outline-none focus:border-blue dark:border-border-dark dark:bg-surface-alt-dark
+               dark:text-main-dark dark:focus:border-blue-dark"
+        [ngModel]="confirmNewPassword()"
+        (ngModelChange)="confirmNewPassword.set($event); changePasswordError.set(null)"
+        (keyup.enter)="submitChangePassword()" />
+    </div>
+
+    @if (changePasswordError()) {
+      <p class="text-xs text-danger dark:text-danger-dark">{{ changePasswordError() }}</p>
+    }
+
+    <button type="button"
+      class="rounded-2xl bg-blue py-3 text-sm font-semibold text-white transition-opacity
+             disabled:opacity-50 dark:bg-blue-dark dark:text-surface-white-dark"
+      [disabled]="changingPassword() || !currentPassword() || !newPassword() || !confirmNewPassword()"
+      (click)="submitChangePassword()">
+      @if (changingPassword()) {
+        <i class="pi pi-spin pi-spinner"></i>
+      } @else {
+        Cambiar Contraseña
+      }
+    </button>
+  </div>
+</section>

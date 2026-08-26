@@ -1,0 +1,44 @@
+:host {
+  display: block;
+}
+
+/* ── Entrada de secciones estáticas (encabezado, intensidad, nota, acciones) ── */
+.content-enter {
+  opacity: 0;
+  transform: translateY(14px);
+  transition: opacity 380ms ease-out, transform 380ms ease-out;
+  transition-delay: var(--enter-delay, 0ms);
+}
+
+.content-enter--visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ── Entrada de cada chip de emoción, en cascada por posición en el grid ── */
+.chip-enter {
+  opacity: 0;
+  transform: scale(0.85) translateY(10px);
+  transition: opacity 300ms ease-out, transform 300ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  transition-delay: var(--chip-delay, 0ms);
+}
+
+.chip-enter--visible {
+  opacity: 1;
+  transform: scale(1) translateY(0);
+}
+
+/* ── Entrada/salida del card de sugerencia de combinación ── */
+/* La duración aquí debe coincidir con SUGGESTION_LEAVE_MS en mood-form.ts,
+   que retrasa el desmontaje del @if lo suficiente para que la transición
+   de salida termine de reproducirse. */
+.suggestion-card {
+  opacity: 0;
+  transform: translateY(-10px) scale(0.96);
+  transition: opacity 260ms ease-out, transform 260ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.suggestion-card--visible {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
