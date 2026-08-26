@@ -36,23 +36,27 @@ export class SqliteService {
   }
 
   private async doInit(): Promise<void> {
-    if (this.platform === 'web') {
-      await this.setupWebStore();
+    try {
+      if (this.platform === 'web') {
+        await this.setupWebStore();
+      }
+
+      const isConn = (await this.sqlite.isConnection(DB_NAME, false)).result;
+      const consistent = (await this.sqlite.checkConnectionsConsistency()).result;
+
+      this.db = isConn && consistent
+        ? await this.sqlite.retrieveConnection(DB_NAME, false)
+        : await this.sqlite.createConnection(DB_NAME, false, 'no-encryption', 1, false);
+
+      await this.db.open();
+      await this.runMigrations();
+
+      this.ready.set(true);
+    } catch (err) {
+      console.error('[SqliteService] Error fatal en doInit():', err);
+      throw new Error(`SqliteService.doInit() falló: ${err instanceof Error ? err.message : String(err)}`);
     }
-
-    const isConn = (await this.sqlite.isConnection(DB_NAME, false)).result;
-    const consistent = (await this.sqlite.checkConnectionsConsistency()).result;
-
-    this.db = isConn && consistent
-      ? await this.sqlite.retrieveConnection(DB_NAME, false)
-      : await this.sqlite.createConnection(DB_NAME, false, 'no-encryption', 1, false);
-
-    await this.db.open();
-    await this.runMigrations();
-
-    this.ready.set(true);
   }
-
   private async setupWebStore(): Promise<void> {
     await jeepSqlite(window);
     await customElements.whenDefined('jeep-sqlite');

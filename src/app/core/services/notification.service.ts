@@ -199,7 +199,7 @@ export class NotificationService {
 
     await this.scheduleAt(
       NOTIFICATION_IDS.STREAK,
-      `¡${streak} días seguidos! 🎉`,
+      `¡${streak} días seguidos!`,
       `Vas muy bien, ${name}. Sigue así.`,
       new Date(Date.now() + 3000) // casi inmediato, unos segundos después de guardar
     );
