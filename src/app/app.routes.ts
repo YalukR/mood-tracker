@@ -25,13 +25,14 @@ export const routes: Routes = [
         path: 'stats',
         loadComponent: () => import('./pages/stats/stats').then(m => m.Stats),
         canActivate: [setupCompletedGuard, lockGuard],
-        data: { icon: 'pi-chart-bar', label: 'Stats', title: 'Estadísticas' },
+        data: { icon: 'pi-chart-bar', label: 'Estadisticas', title: 'Estadísticas' },
+
     },
     {
         path: 'home',
         loadComponent: () => import('./pages/home/home').then(m => m.Home),
         canActivate: [setupCompletedGuard, lockGuard],
-        data: { icon: 'pi-home', label: 'Home', title: 'Inicio' },
+        data: { icon: 'pi-home', label: 'Inicio', title: 'Inicio' },
     },
     {
         path: 'calendar',
