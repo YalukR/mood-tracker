@@ -43,17 +43,13 @@ export class Settings implements OnInit {
 
   // ── Bloqueo ──
   async onLockToggle(enabled: boolean): Promise<void> {
-    const original = this.lockEnabled();
-    const ok = await this.passwordPrompt.request();
-
-    if (!ok) {
-      this.revertToggle(this.lockEnabled, enabled, original);
-      return;
-    }
-
     this.lockEnabled.set(enabled);
     await this.appSettingsRepo.setLockEnabled(enabled);
-    if (!enabled) this.lockState.unlockSession();
+    if (enabled) {
+      this.lockState.lock();
+    } else {
+      this.lockState.unlockSession();
+    }
   }
 
   // ── Notificaciones ──
